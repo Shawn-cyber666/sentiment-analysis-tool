@@ -1,155 +1,132 @@
 import streamlit as st
-import pandas as pd
 import requests
-import json
-import time
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+import io
+import datetime
 
 # ==========================================
-# 1. 核心职责说明 (功能概述)
+# 1. 导航功能：生成搜索链接
 # ==========================================
-"""
-目标：开发智能舆论抓取分析工具
-核心功能：
-- 模拟/接口数据采集（针对社媒负面反馈）
-- 技能培训：展示从原始文本到结构化矩阵的转化
-- 详尽文档：代码内含实现说明
-"""
-
-# ==========================================
-# 2. 模拟高级采集模块 (Scraper Logic)
-# ==========================================
-def fetch_ugc_data(keyword):
-    """
-    模拟从社媒平台（小红书/微博）抓取的原始负面数据。
-    在实际生产中，此处可替换为 Webhook 或特定的爬虫 API。
-    """
-    # 模拟抓取到的关于手机硬件和算法的真实负面声音
-    mock_raw_data = [
-        f"这代 {keyword} 的硬件品控真是绝了，背板边缘居然有明显突起，手感割裂。",
-        f"用了几天 {keyword}，发现影像算法退步明显，长焦涂抹感太重，画面泛白。",
-        f"{keyword} 的公关太敏感了，反馈个问题就被说是水军，营销痕迹太重。",
-        "万元旗舰居然镜头卡口松动，做工还不如去年的旗舰。",
-        "35mm 焦段就是个营销噱头，本质上还是算法暴力锐化，文字边缘描边感太强。"
-    ]
-    return mock_raw_data
-
-# ==========================================
-# 3. 智能分析层 (AI Analysis Engine)
-# ==========================================
-def run_llm_analysis(raw_texts, api_key, api_base, model_name):
-    """
-    核心逻辑：通过 LLM 深度提取负面矩阵并按要求格式化
-    """
-    # 拼接原始评论
-    formatted_comments = "\n".join([f"评论{i+1}: {text}" for i, text in enumerate(raw_texts)])
-    
-    # 严格遵循用户给出的报告模版进行 Prompt 工程
-    prompt = f"""
-    你是一个资深智能硬件舆情分析专家。请根据以下用户评论，输出一份深度的手机舆情分析报告。
-    你必须重点分析【负面评价】，并严格遵守以下格式要求：
-
-    一、 用户声音概览
-    1. 情绪占比 (格式：情绪类型 (百分比) 趋势符号：简述原因)
-    2. 核心热议话题（新增聚类）
-
-    二、 典型声音描述
-    (提取3-4条最尖锐、最具代表性的用户原话)
-
-    三、 问题反馈矩阵（动态更新）
-    以 Markdown 表格输出，包含字段：维度、关键问题点、严重程度、舆论趋势
-
-    四、 综合分析总结
-    1. 舆论阶段判断
-    2. 针对性建议（算法、品控、营销三个维度）
-
-    待分析评论内容：
-    {formatted_comments}
-    """
-
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
+def get_search_links(keyword):
+    return {
+        "小红书 (侧重品控/审美)": f"https://www.xiaohongshu.com/search_result?keyword={keyword}%20%E5%90%8E%E6%82%94",
+        "微博 (侧重热点/营销质疑)": f"https://s.weibo.com/weibo?q={keyword}%20%E7%BF%BB%E8%BD%A6",
+        "京东 (侧重硬件故障/售后)": f"https://search.jd.com/Search?keyword={keyword}%20%E5%B7%AE%E8%AF%84",
+        "酷安 (侧重算法/系统BUG)": f"https://www.coolapk.com/search?q={keyword}"
     }
+
+# ==========================================
+# 2. PDF 生成逻辑 (支持中文)
+# ==========================================
+def create_pdf(text_content):
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    
+    # 注意：在云端部署时，需要上传一个中文字体文件并在下方引用
+    # 暂时使用标准字体，部署时建议添加：pdfmetrics.registerFont(TTFont('SimSun', 'simsun.ttf'))
+    c.setFont("Helvetica", 12) 
+    
+    # 简单的分页文本写入
+    y_position = height - 50
+    lines = text_content.split('\n')
+    for line in lines:
+        if y_position < 50:
+            c.showPage()
+            y_position = height - 50
+        c.drawString(50, y_position, line)
+        y_position -= 15
+        
+    c.save()
+    buffer.seek(0)
+    return buffer
+
+# ==========================================
+# 3. AI 分析引擎 (阿里云百炼)
+# ==========================================
+def analyze_with_llm(comments, api_key, model_name):
+    url = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+    
+    prompt = f"""
+    你是一个资深舆情专家。请对以下人工收集的原始负面评论进行深度分析。
+    
+    【待分析内容】：
+    {comments}
+    
+    【输出格式要求】：
+    一、 用户声音概览
+    1. 情绪占比 (列出 愤怒/失望、质疑、反感等比例及原因)
+    2. 核心热议话题 (聚类分析)
+    二、 典型声音描述 (提取最尖锐的3-5条原话)
+    三、 问题反馈矩阵 (Markdown表格：维度 | 关键问题点 | 严重程度 | 舆论趋势)
+    四、 综合分析总结 (1. 舆论阶段判断 2. 补救建议)
+    """
     
     payload = {
         "model": model_name,
-        "messages": [
-            {"role": "system", "content": "你是一个能够精准识别手机品控和算法问题的专家，擅长从杂乱评论中提取核心痛点。"},
-            {"role": "user", "content": prompt}
-        ],
-        "temperature": 0.1  # 降低随机性，保证报告逻辑严密
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.3
     }
-
+    
     try:
-        response = requests.post(f"{api_base}/chat/completions", headers=headers, json=payload, timeout=60)
-        response.raise_for_status()
-        return response.json()['choices'][0]['message']['content']
+        res = requests.post(url, headers=headers, json=payload, timeout=60)
+        return res.json()['choices'][0]['message']['content']
     except Exception as e:
-        return f"AI 引擎报告生成失败，请检查配置或网络。详情：{e}"
+        return f"AI 分析失败: {str(e)}"
 
 # ==========================================
-# 4. 实现指引与文档 (Implementation Guide)
+# 4. Streamlit UI 界面
 # ==========================================
-def display_guide():
-    with st.expander("📘 开发与部署指引 (必读)"):
-        st.markdown("""
-        ### 实现步骤：
-        1. **数据源层**：本程序目前通过模拟函数生成数据。如需对接真实小红书/微博数据，建议使用 `Playwright` 编写自动化脚本。
-        2. **API 接入**：由于你使用小米手机及阿里云 API，请在侧边栏正确填写 `sk-xxx`。
-        3. **部署**：
-            - 将代码提交至 GitHub。
-            - 在 Streamlit Cloud 关联仓库。
-            - 在云端环境变量中配置 API Key (可选)。
-        ### 参数调整：
-        - `temperature`: 调低（如 0.1）可使报告格式更稳定。
-        - `model_name`: 阿里云百炼请使用 `deepseek-v3` 或 `qwen-max`。
-        """)
+st.set_page_config(page_title="人机协作舆情分析", layout="wide")
 
-# ==========================================
-# 5. UI 展示层 (Streamlit Dashboard)
-# ==========================================
-st.set_page_config(page_title="智能舆情分析工具", layout="wide")
+st.title("🛡️ 手机舆情“专家级”分析系统")
+st.markdown("---")
 
-st.title("🛡️ 手机产品舆情智能扫描分析引擎")
-display_guide()
-
+# 侧边栏配置
 with st.sidebar:
-    st.header("⚙️ 系统配置")
-    config_api_key = st.text_input("阿里云 API Key", type="password")
-    config_model = st.text_input("模型代号 (Model Name)", value="deepseek-v3")
-    config_url = st.text_input("API 接口地址", value="https://dashscope.aliyuncs.com/compatible-mode/v1")
+    st.header("🔑 配置 API")
+    api_key = st.text_input("阿里云 API Key", type="password")
+    model_name = st.text_input("模型代号", value="deepseek-v3")
+    
+    st.header("🔍 调查对象")
+    target = st.text_input("输入分析对象", value="小米14 Ultra")
     
     st.divider()
-    target_phone = st.text_input("分析目标 (例如：小米14, vivo X200)", value="某品牌旗舰手机")
-    
-    analyze_btn = st.button("🚀 生成一键分析报告", type="primary")
+    st.markdown("### 第一步：人工取证")
+    links = get_search_links(target)
+    for name, url in links.items():
+        st.link_button(f"🔗 进入{name}", url)
 
-# 主执行逻辑
+# 主界面
+st.subheader("📝 第二步：粘贴负面样本")
+raw_input = st.text_area("请在下方粘贴你在上述平台发现的负面评价、帖子内容或评论（不限格式）：", height=300)
+
+col1, col2 = st.columns(2)
+with col1:
+    analyze_btn = st.button("🚀 生成智能分析报告", type="primary", use_container_width=True)
+
 if analyze_btn:
-    if not config_api_key:
-        st.error("请输入 API Key 以启动 LLM 引擎。")
+    if not api_key or not raw_input:
+        st.warning("⚠️ 请确保 API Key 已填且评论区不为空。")
     else:
-        # 步骤 1：获取数据
-        with st.status("正在检索全网 UGC 数据...", expanded=True) as status:
-            st.write("连接数据源接口...")
-            raw_data = fetch_ugc_data(target_phone)
-            time.sleep(1)
-            st.write(f"已发现关于 {target_phone} 的 5 条典型负面样本。")
+        with st.spinner("AI 正在深度解析负面反馈..."):
+            report_text = analyze_with_llm(raw_input, api_key, model_name)
             
-            # 步骤 2：AI 深度分析
-            st.write("正在驱动 LLM 进行语义聚类与矩阵提取...")
-            final_report = run_llm_analysis(raw_data, config_api_key, config_url, config_model)
+            st.markdown("### 📊 生成的实时分析报告")
+            st.markdown(report_text)
             
-            status.update(label="报告生成完毕！", state="complete", expanded=False)
+            # 生成 PDF 并提供下载
+            pdf_data = create_pdf(report_text)
+            st.download_button(
+                label="📥 下载 PDF 格式报告",
+                data=pdf_data,
+                file_name=f"{target}_舆情报告_{datetime.date.today()}.pdf",
+                mime="application/pdf"
+            )
 
-        # 步骤 3：渲染报告
-        st.divider()
-        st.markdown(final_report)
-        
-        # 步骤 4：一键下载
-        st.download_button(
-            label="📥 点击下载分析报告 (.md)",
-            data=final_report,
-            file_name=f"{target_phone}_舆情报告.md",
-            mime="text/markdown"
-        )
+st.divider()
+st.caption("提示：人工调查时，建议优先复制带有‘硬件故障’、‘品控’、‘算法退步’等关键词的深度评论。")
