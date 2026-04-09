@@ -7,83 +7,93 @@ import re
 # --- 1. 调研工具入口 ---
 def get_search_links(keyword):
     return {
-        "小红书 (搜深度差评)": f"https://www.xiaohongshu.com/search_result?keyword={keyword}%20%E5%90%8E%E6%82%94",
-        "微博 (搜实时翻车)": f"https://s.weibo.com/weibo?q={keyword}%20%E7%BF%BB%E8%BD%A6",
-        "酷安 (搜硬件Bug)": f"https://www.coolapk.com/search?q={keyword}",
-        "京东 (搜售后追评)": f"https://search.jd.com/Search?keyword={keyword}%20%E5%B7%AE%E8%AF%84"
+        "小红书 (深度差评)": "https://www.xiaohongshu.com/search_result?keyword=" + keyword + "%20%E5%90%8E%E6%82%94",
+        "微博 (实时吐槽)": "https://s.weibo.com/weibo?q=" + keyword + "%20%E7%BF%BB%E8%BD%A6",
+        "酷安 (硬件Bug反馈)": "https://www.coolapk.com/search?q=" + keyword,
+        "京东 (售后真实评价)": "https://search.jd.com/Search?keyword=" + keyword + "%20%E5%B7%AE%E8%AF%84"
     }
 
-# --- 2. 专家级深度分析引擎 ---
+# --- 2. 核心分析逻辑：拒绝幻觉与符号 ---
 def analyze_with_llm(comments, api_key, model_name):
     url = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+    headers = {"Authorization": "Bearer " + api_key, "Content-Type": "application/json"}
     
-    prompt = f"""
-    任务：你是一名拥有15年资历的手机行业高级分析师，负责撰写 vivo x300u 的【高层管理内参】。
-    
-    严苛要求：
-    1. 彻底去AI化：严禁使用任何 Markdown 符号（如 *, #, -, >）。严禁使用“总而言之”、“综上所述”等口水词。
-    2. 深度穿透：不要停留在“进灰”、“涂抹”表面。请分析这些问题如何动摇了 vivo 的高端心智，以及在供应链管理上的具体缺失。
-    3. 语言风格：专业、冷峻、逻辑严密，直接输出纯文字段落。
-
-    必须包含以下四个维度：
-    一、 舆情风险能级评估：判断当前不满情绪对 vivo 高端系列溢价能力的长期损害。
-    二、 核心痛点根源溯源：从光学模组封装工艺、底层影像算法逻辑等角度深挖原因。
-    三、 典型用户心理画像：还原高端机用户在面对“进灰”等低级品控问题时的真实心理落差。
-    四、 战略级对策建议：给出技术迭代、供应链考核及品牌公关的闭环方案。
-
-    待研判样本：
-    {comments}
-    """
+    # 使用极致强硬的指令，防止 AI 瞎编
+    prompt = (
+        "你是一名手机行业资深内参专家。请针对 vivo x300u 的用户评论撰写深度分析报告。\n"
+        "要求：\n"
+        "1. 禁止脑补：严禁提及评论中没有的内容（如增距镜、磁吸配件等）。\n"
+        "2. 深度穿透：分析这些问题如何影响 vivo 的高端品牌心智。\n"
+        "3. 纯净文字：禁止使用任何 Markdown 符号（如 #, *, -, >）。\n\n"
+        "待分析数据：\n" + comments
+    )
     
     payload = {
         "model": model_name,
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.3
+        "temperature": 0.0 # 强制关闭创造力，只说实话
     }
     
     try:
         res = requests.post(url, headers=headers, json=payload, timeout=60)
-        raw_text = res.json()['choices'][0]['message']['content']
-        # 强制清洗所有 AI 符号
-        clean_text = re.sub(r'[*#\-\>]', '', raw_text)
-        return clean_text
+        content = res.json()['choices'][0]['message']['content']
+        # 强制清理所有残留符号
+        return re.sub(r'[*#\-\>]', '', content)
     except Exception as e:
-        return f"深度研判系统调用失败: {str(e)}"
+        return "分析系统调用失败，请检查 API Key。"
 
-# --- 3. 商务级 HTML 报告模板 ---
-def get_professional_html(text_content, target):
-    # 注意：CSS 中的 { } 必须写成 {{ }} 才能在 f-string 中正常运行
-    html_template = f"""
-    <html>
-    <head><meta charset="utf-8">
-    <style>
-        body {{ font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif; line-height: 1.8; color: #1a1a1a; max-width: 900px; margin: 40px auto; padding: 20px; }}
-        .header {{ border-bottom: 4px solid #1a3a5f; margin-bottom: 30px; padding-bottom: 10px; text-align: center; }}
-        .report-title {{ font-size: 26px; font-weight: bold; color: #1a3a5f; }}
-        .meta-info {{ font-size: 14px; color: #666; margin-top: 10px; }}
-        .section {{ margin-top: 35px; }}
-        .section-h {{ font-size: 20px; font-weight: bold; color: #1a3a5f; border-left: 6px solid #1a3a5f; padding-left: 15px; margin-bottom: 15px; background: #f8f9fa; padding-top: 5px; padding-bottom: 5px; }}
-        .text-body {{ font-size: 16px; text-align: justify; white-space: pre-wrap; }}
-        .confidential {{ text-align: right; color: #d9534f; font-weight: bold; font-size: 12px; text-transform: uppercase; }}
-    </style>
-    </head>
-    <body>
-        <div class="confidential">INTERNAL USE ONLY - CONFIDENTIAL</div>
-        <div class="header">
-            <div class="report-title">{target} 系列用户核心负面反馈深度研判内参</div>
-            <div class="meta-info">报告类别：高端机舆情专项 | 生成时间：{datetime.date.today()}</div>
-        </div>
-        <div class="text-body">{text_content}</div>
-        <div style="margin-top: 60px; text-align: center; font-size: 12px; color: #999;">本分析严格基于所提供的真实样本进行逻辑建模，不代表平台立场。</div>
-    </body>
-    </html>
-    """
-    b64 = base64.b64encode(html_template.encode()).decode()
-    return f'<a href="data:text/html;base64,{b64}" download="{target}_调研内参.html" style="text-decoration:none; background-color:#1a3a5f; color:white; padding:15px 30px; border-radius:4px; font-weight:bold; display:inline-block;">📥 导出高管审阅格式 (专业PDF预览)</a>'
+# --- 3. 稳健的 HTML 生成函数 ---
+def get_report_download_link(text_content, target):
+    # 彻底避开 f-string 冲突，使用字符串拼接构建专业公文样式
+    html_start = """
+    <html><head><meta charset="utf-8"><style>
+    body { font-family: sans-serif; line-height: 1.8; padding: 40px; color: #1a1a1a; max-width: 800px; margin: auto; }
+    .h1 { font-size: 24px; font-weight: bold; border-bottom: 3px solid #1a3a5f; padding-bottom: 10px; text-align: center; color: #1a3a5f; }
+    .date { text-align: center; color: #666; margin-bottom: 30px; font-size: 14px; }
+    .content { white-space: pre-wrap; font-size: 16px; background: #f9f9f9; padding: 20px; border-radius: 5px; }
+    </style></head><body>
+    <div class="h1">""" + target + """ 舆情研判内参报告</div>
+    <div class="date">生成日期：""" + str(datetime.date.today()) + """</div>
+    <div class="content">"""
+    
+    html_end = """</div><p style='text-align:center; font-size:12px; color:#999; margin-top:50px;'>
+    提示：下载后用浏览器打开，按 Command + P 选择另存为 PDF 即可获得完美排版报告。</p></body></html>"""
+    
+    full_html = html_start + text_content + html_end
+    b64 = base64.b64encode(full_html.encode('utf-8')).decode()
+    
+    link = '<a href="data:text/html;base64,' + b64 + '" download="' + target + '_Report.html" '
+    link += 'style="text-decoration:none; background-color:#1a3a5f; color:white; padding:12px 25px; border-radius:4px; font-weight:bold;">'
+    link += '📥 下载专业调研内参 (防止乱码版)</a>'
+    return link
 
 # --- 4. Streamlit 网页前端 ---
-st.set_page_config(page_title="手机高端舆情研判", layout="wide")
-st.markdown("<style>.main {background-color: #f5f7f9;}</style>", unsafe_allow_html=True)
+st.set_page_config(page_title="vivo x300u 舆情研判")
+st.title("💼 vivo x300u 高端舆情专项分析平台")
 
-st.title("💼 手机品牌高端化舆情研判平台
+with st.sidebar:
+    st.header("⚙️ 系统配置")
+    api_key = st.text_input("API Key", type="password")
+    model_name = st.text_input("分析模型", value="deepseek-v3")
+    
+    st.divider()
+    st.subheader("第一步：人工取证")
+    links = get_search_links("vivo x300u")
+    for name, url in links.items():
+        st.link_button(name, url)
+
+st.subheader("📝 第二步：导入待分析样本")
+raw_input = st.text_area("请在这里粘贴收集到的差评原话：", height=300)
+
+if st.button("🚀 生成深度研判报告", type="primary"):
+    if not api_key or len(raw_input) < 10:
+        st.error("请确保 API 配置正确且输入了真实的评论内容。")
+    else:
+        with st.spinner("系统正在进行语义穿透与风险建模..."):
+            final_report = analyze_with_llm(raw_input, api_key, model_name)
+            st.markdown("---")
+            st.write(final_report)
+            
+            st.divider()
+            # 显示下载链接
+            st.markdown(get_report_download_link(final_report, "vivo x300u"), unsafe_allow_html=True)
