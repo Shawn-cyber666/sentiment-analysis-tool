@@ -4,7 +4,7 @@ import datetime
 import base64
 import re
 
-# --- 1. 调研工具入口 ---
+# --- 1. 调研入口 ---
 def get_search_links(keyword):
     return {
         "小红书 (深度差评)": "https://www.xiaohongshu.com/search_result?keyword=" + keyword + "%20%E5%90%8E%E6%82%94",
@@ -13,87 +13,99 @@ def get_search_links(keyword):
         "京东 (售后真实评价)": "https://search.jd.com/Search?keyword=" + keyword + "%20%E5%B7%AE%E8%AF%84"
     }
 
-# --- 2. 核心分析逻辑：拒绝幻觉与符号 ---
+# --- 2. 深度专家逻辑：多层级 + 原句模块 ---
 def analyze_with_llm(comments, api_key, model_name):
     url = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
     headers = {"Authorization": "Bearer " + api_key, "Content-Type": "application/json"}
     
-    # 使用极致强硬的指令，防止 AI 瞎编
     prompt = (
-        "你是一名手机行业资深内参专家。请针对 vivo x300u 的用户评论撰写深度分析报告。\n"
+        "你是一名顶级商业咨询顾问。请针对 vivo x300u 用户评论撰写深度调研报告。\n"
         "要求：\n"
-        "1. 禁止脑补：严禁提及评论中没有的内容（如增距镜、磁吸配件等）。\n"
-        "2. 深度穿透：分析这些问题如何影响 vivo 的高端品牌心智。\n"
-        "3. 纯净文字：禁止使用任何 Markdown 符号（如 #, *, -, >）。\n\n"
+        "1. 严禁使用 #, *, -, > 等符号，直接用中文序号（一、 1. (1)）体现四级深度排版。\n"
+        "2. 必须包含【核心负面原句直击】模块，选取3-5条最尖锐的原始评论。\n"
+        "3. 深度要求：分析问题背后的品控链路失效、高端心智受损、以及竞品（如小米/华为）的挤压风险。\n"
         "待分析数据：\n" + comments
     )
     
     payload = {
         "model": model_name,
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.0 # 强制关闭创造力，只说实话
+        "temperature": 0.2
     }
     
     try:
         res = requests.post(url, headers=headers, json=payload, timeout=60)
         content = res.json()['choices'][0]['message']['content']
-        # 强制清理所有残留符号
+        # 深度清洗符号，确保报告干净
         return re.sub(r'[*#\-\>]', '', content)
-    except Exception as e:
-        return "分析系统调用失败，请检查 API Key。"
+    except:
+        return "分析调用失败，请检查配置。"
 
-# --- 3. 稳健的 HTML 生成函数 ---
-def get_report_download_link(text_content, target):
-    # 彻底避开 f-string 冲突，使用字符串拼接构建专业公文样式
-    html_start = """
-    <html><head><meta charset="utf-8"><style>
-    body { font-family: sans-serif; line-height: 1.8; padding: 40px; color: #1a1a1a; max-width: 800px; margin: auto; }
-    .h1 { font-size: 24px; font-weight: bold; border-bottom: 3px solid #1a3a5f; padding-bottom: 10px; text-align: center; color: #1a3a5f; }
-    .date { text-align: center; color: #666; margin-bottom: 30px; font-size: 14px; }
-    .content { white-space: pre-wrap; font-size: 16px; background: #f9f9f9; padding: 20px; border-radius: 5px; }
-    </style></head><body>
-    <div class="h1">""" + target + """ 舆情研判内参报告</div>
-    <div class="date">生成日期：""" + str(datetime.date.today()) + """</div>
-    <div class="content">"""
+# --- 3. 商务级 HTML 模板 (卡片式布局) ---
+def get_ultra_report_link(text_content, target):
+    # 彻底隔离大括号冲突，采用分段拼接
+    html_header = """
+    <html><head><meta charset="utf-8">
+    <style>
+        body { font-family: 'PingFang SC', sans-serif; background: #f4f7f9; padding: 50px; color: #333; }
+        .report-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 900px; margin: auto; border-top: 8px solid #1a3a5f; }
+        .top-tag { color: #d9534f; font-weight: bold; font-size: 12px; letter-spacing: 2px; margin-bottom: 20px; }
+        .main-title { font-size: 28px; font-weight: bold; color: #1a3a5f; margin-bottom: 5px; }
+        .sub-info { font-size: 14px; color: #999; margin-bottom: 40px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        .content-box { white-space: pre-wrap; line-height: 2; font-size: 16px; color: #2c3e50; }
+        .quote-style { background: #fff5f5; border-left: 5px solid #d9534f; padding: 15px; margin: 20px 0; font-style: italic; }
+        .footer { text-align: center; margin-top: 40px; font-size: 12px; color: #bbb; }
+    </style>
+    </head><body>
+    <div class="report-card">
+        <div class="top-tag">机密 · 内部传阅</div>
+        <div class="main-title">__TARGET__ 舆情深度穿透研判报告</div>
+        <div class="sub-info">报告流水号：调研-2026-X | 生成日期：__DATE__</div>
+        <div class="content-box">__CONTENT__</div>
+        <div class="footer">报告由智能决策分析系统生成，仅供管理层战略决策参考。</div>
+    </div>
+    </body></html>
+    """
     
-    html_end = """</div><p style='text-align:center; font-size:12px; color:#999; margin-top:50px;'>
-    提示：下载后用浏览器打开，按 Command + P 选择另存为 PDF 即可获得完美排版报告。</p></body></html>"""
+    # 使用 replace 注入数据，不产生语法歧义
+    full_html = html_header.replace("__TARGET__", target)
+    full_html = full_html.replace("__DATE__", str(datetime.date.today()))
+    full_html = full_html.replace("__CONTENT__", text_content)
     
-    full_html = html_start + text_content + html_end
     b64 = base64.b64encode(full_html.encode('utf-8')).decode()
     
-    link = '<a href="data:text/html;base64,' + b64 + '" download="' + target + '_Report.html" '
-    link += 'style="text-decoration:none; background-color:#1a3a5f; color:white; padding:12px 25px; border-radius:4px; font-weight:bold;">'
-    link += '📥 下载专业调研内参 (防止乱码版)</a>'
-    return link
+    btn_html = '<a href="data:text/html;base64,' + b64 + '" download="' + target + '_深度分析.html" '
+    btn_html += 'style="text-decoration:none; background:linear-gradient(135deg, #1a3a5f 0%, #2c5e8c 100%); color:white; padding:15px 35px; border-radius:30px; font-weight:bold; box-shadow: 0 4px 15px rgba(26,58,95,0.3); display:inline-block;">'
+    btn_html += '📥 导出高端商务 PDF 格式报告</a>'
+    return btn_html
 
-# --- 4. Streamlit 网页前端 ---
-st.set_page_config(page_title="vivo x300u 舆情研判")
-st.title("💼 vivo x300u 高端舆情专项分析平台")
+# --- 4. Streamlit 前端渲染 ---
+st.set_page_config(page_title="高端舆情内参", layout="wide")
+st.title("🛡️ 手机品牌高端化深度研判平台")
 
 with st.sidebar:
-    st.header("⚙️ 系统配置")
-    api_key = st.text_input("API Key", type="password")
-    model_name = st.text_input("分析模型", value="deepseek-v3")
-    
+    st.header("🔑 系统凭证")
+    api_key = st.text_input("阿里云 Key", type="password")
+    model_name = st.text_input("模型代号", value="deepseek-v3")
     st.divider()
-    st.subheader("第一步：人工取证")
+    st.subheader("第一步：全网差评透析")
     links = get_search_links("vivo x300u")
     for name, url in links.items():
         st.link_button(name, url)
 
-st.subheader("📝 第二步：导入待分析样本")
-raw_input = st.text_area("请在这里粘贴收集到的差评原话：", height=300)
+st.subheader("📝 第二步：输入待研判评论样本")
+raw_data = st.text_area("请粘贴 vivo x300u 的差评内容（建议多粘贴几条以提高深度）：", height=350)
 
-if st.button("🚀 生成深度研判报告", type="primary"):
-    if not api_key or len(raw_input) < 10:
-        st.error("请确保 API 配置正确且输入了真实的评论内容。")
+if st.button("🚀 启动深度多维建模报告", type="primary"):
+    if not api_key or len(raw_data) < 10:
+        st.error("请输入 API Key 并粘贴足够的数据。")
     else:
-        with st.spinner("系统正在进行语义穿透与风险建模..."):
-            final_report = analyze_with_llm(raw_input, api_key, model_name)
-            st.markdown("---")
-            st.write(final_report)
+        with st.spinner("正在解析品控链路、品牌资产受损度及用户心理预想..."):
+            final_report = analyze_with_llm(raw_data, api_key, model_name)
+            
+            st.markdown("### 📊 深度研判预览")
+            st.info(final_report)
             
             st.divider()
-            # 显示下载链接
-            st.markdown(get_report_download_link(final_report, "vivo x300u"), unsafe_allow_html=True)
+            st.markdown(get_ultra_report_link(final_report, "vivo x300u"), unsafe_allow_html=True)
+            st.caption("💡 导出建议：下载后用浏览器打开，按 Command+P 另存为 PDF，效果最佳。")
