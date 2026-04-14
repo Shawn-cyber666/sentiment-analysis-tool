@@ -1,4 +1,4 @@
-# 📱 终端产品舆情专项研判系统 (Sentiment Analysis System)
+# 📱 终端产品全维度研判平台 (Strategy Hub)
 
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.x-FF4B4B)
