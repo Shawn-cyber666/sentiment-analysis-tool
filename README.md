@@ -3,6 +3,7 @@
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.x-FF4B4B)
 ![License](https://img.shields.io/badge/license-MIT-green)
+
 💼 终端产品全维度研判平台 (Strategy Hub)
 这是一款专为产品营销经理 (PMM) 打造的数字化作战工具。它将零散的社交媒体语料（UGC）转化为“高管准入级”的内参报告，支持单品深度复盘与跨品牌战略攻防研判。
 
