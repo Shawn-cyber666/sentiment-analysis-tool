@@ -5,6 +5,9 @@ import base64
 import re
 import urllib.parse
 from html import escape
+from io import BytesIO
+import textwrap
+
 
 
 # =========================
@@ -409,15 +412,15 @@ SEARCH_ENGINES = [
 API_PRESETS = {
     "阿里云 DashScope": {
         "base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-        "models": ["deepseek-v3", "qwen-max", "qwen-plus", "qwen-turbo"],
+        "models": ["deepseek-v3", "qwen-max", "qwen-plus", "qwen-turbo", "qwen-vl-plus", "qwen-vl-max"],
     },
     "OpenRouter": {
         "base": "https://openrouter.ai/api/v1",
-        "models": ["deepseek/deepseek-chat-v3-0324:free", "openai/gpt-4.1-mini", "google/gemini-2.5-flash-preview"],
+        "models": ["deepseek/deepseek-chat-v3-0324:free", "openai/gpt-4.1-mini", "openai/gpt-4o-mini", "google/gemini-2.5-flash-preview", "google/gemini-2.0-flash-001"],
     },
     "SiliconFlow": {
         "base": "https://api.siliconflow.cn/v1",
-        "models": ["deepseek-ai/DeepSeek-V3", "Qwen/Qwen2.5-72B-Instruct", "THUDM/GLM-4-9B-Chat"],
+        "models": ["deepseek-ai/DeepSeek-V3", "Qwen/Qwen2.5-72B-Instruct", "Qwen/Qwen2.5-VL-72B-Instruct", "THUDM/GLM-4-9B-Chat"],
     },
 }
 
@@ -457,6 +460,25 @@ def is_ready_to_analyze(api_key: str, *texts: str) -> bool:
         return False
     if any(not text.strip() for text in texts):
         st.warning("请先填写产品名，并粘贴真实语料。")
+        return False
+    return True
+
+
+def is_ready_to_analyze_multimodal(api_key: str, required_names: list[str], evidence_groups: list[tuple[str, str, list]]) -> bool:
+    if not api_key.strip():
+        st.warning("请先在侧边配置栏输入 API Key。")
+        return False
+    if any(not name.strip() for name in required_names):
+        st.warning("请先填写产品名/竞品名。")
+        return False
+    missing = []
+    for label, text_value, image_files in evidence_groups:
+        has_text = bool((text_value or "").strip())
+        has_image = bool(image_files)
+        if not has_text and not has_image:
+            missing.append(label)
+    if missing:
+        st.warning("请为以下对象粘贴语料或上传图片证据：" + "、".join(missing))
         return False
     return True
 
@@ -598,10 +620,44 @@ def render_evidence_helper(product_name: str):
         st.code(get_corpus_template(product_name), language="text")
 
 
+def render_uploaded_images(files, caption_prefix="图片证据"):
+    if not files:
+        return
+    st.caption(f"已上传 {len(files)} 张{caption_prefix}。图片会随报告一起送入支持视觉能力的模型分析。")
+    cols = st.columns(min(4, max(1, len(files))))
+    for idx, file in enumerate(files[:8]):
+        with cols[idx % len(cols)]:
+            st.image(file, caption=file.name, use_container_width=True)
+
+
+
 # =========================
 # LLM engine and prompt templates
 # =========================
-def analyze_with_llm(prompt: str, api_key: str, model_name: str, api_base: str):
+def image_file_to_block(uploaded_file):
+    data = uploaded_file.getvalue()
+    mime = uploaded_file.type or "image/png"
+    b64 = base64.b64encode(data).decode("utf-8")
+    return {
+        "type": "image_url",
+        "image_url": {"url": f"data:{mime};base64,{b64}"},
+    }
+
+
+def build_user_content(prompt: str, image_groups: list[tuple[str, list]] | None = None):
+    if not image_groups:
+        return prompt
+    content = [{"type": "text", "text": prompt}]
+    for label, files in image_groups:
+        if not files:
+            continue
+        content.append({"type": "text", "text": f"以下图片证据归属：{label}。请只读取图片中可见的信息，不要推断图片之外的事实。"})
+        for file in files:
+            content.append(image_file_to_block(file))
+    return content
+
+
+def analyze_with_llm(prompt: str, api_key: str, model_name: str, api_base: str, image_groups: list[tuple[str, list]] | None = None):
     url = api_base.rstrip("/") + "/chat/completions"
     headers = {"Authorization": "Bearer " + api_key.strip(), "Content-Type": "application/json"}
     payload = {
@@ -611,24 +667,25 @@ def analyze_with_llm(prompt: str, api_key: str, model_name: str, api_base: str):
                 "role": "system",
                 "content": (
                     "你是一名严谨的产品策略与用户舆情分析师，服务对象是业务负责人、产品负责人和市场负责人。"
-                    "你只能根据用户提供的真实语料进行分析，严禁编造参数、销量、配置、发布时间、品牌动作或用户评价。"
-                    "如果语料中没有提到某个信息，必须写‘暂无提及’。"
+                    "你只能根据用户提供的真实语料和图片证据进行分析，严禁编造参数、销量、配置、发布时间、品牌动作或用户评价。"
+                    "如果语料或图片中没有提到某个信息，必须写‘暂无提及’。"
+                    "如用户上传截图、海报、评论区截图、表格或产品图片，你可以读取其中可见文字、画面元素和明确可见的信息，但不得推断图片之外的信息。"
                     "输出必须是老板可直接阅读的内部简报风格：少废话、少空话、信息密度高、判断清晰、动作明确。"
                     "不要写长篇铺垫、方法说明、免责声明、过程性废话。"
                     "每个核心判断尽量给出对应证据。表格请使用 Markdown 表格。"
                 ),
             },
-            {"role": "user", "content": prompt},
+            {"role": "user", "content": build_user_content(prompt, image_groups)},
         ],
         "temperature": 0.0,
     }
     try:
-        res = requests.post(url, headers=headers, json=payload, timeout=60)
+        res = requests.post(url, headers=headers, json=payload, timeout=90)
         res.raise_for_status()
         data = res.json()
         return data["choices"][0]["message"]["content"]
     except Exception as e:
-        return f"ERROR: 引擎响应异常，请检查 API Key、模型名称或接口地址。错误信息：{e}"
+        return f"ERROR: 引擎响应异常，请检查 API Key、模型名称、接口地址，或确认当前模型是否支持图片输入。错误信息：{e}"
 
 
 def build_single_prompt(product_name: str, product_type: str, focus: list[str], corpus: str) -> str:
@@ -645,6 +702,7 @@ def build_single_prompt(product_name: str, product_type: str, focus: list[str], 
 - 这份报告默认直接给老板看，必须克制、简洁、专业，不要写空话套话。
 - 不要复述任务，不要写“以下是报告”“基于以上分析”等废话。
 - 每一条结论尽量给出证据摘录。
+- 如果上传了图片证据，请读取图片中可见的文字、截图内容、画面元素，并在证据摘录中标注“图片证据”。
 - 如果某部分证据不足，统一简洁写“暂无提及”，不要重复解释。
 
 输出结构请固定如下：
@@ -702,6 +760,7 @@ def build_compare_prompt(main_product: str, competitor_product: str, product_typ
 - 不要写长篇铺垫，不要凑字数，不要强行制造差异。
 - 若某一方证据不足，简洁写“暂无提及”。
 - 每个对比结论尽量同时体现本品与竞品证据。
+- 如果上传了图片证据，请区分本品图片与竞品图片，只读取可见信息，并在证据摘录中标注“图片证据”。
 
 输出结构请固定如下：
 
@@ -1015,21 +1074,253 @@ def generate_html_report(text_content: str, title: str):
     return f'<a class="download-link" href="data:text/html;base64,{b64}" download="{filename}.html">导出精美简报 · HTML/PDF</a>'
 
 
+def clean_cell_text(value: str) -> str:
+    return re.sub(r"<[^>]+>", "", normalize_line(value or ""))
+
+
+def create_docx_report(report_text: str, title: str) -> bytes:
+    from docx import Document
+    from docx.shared import Pt, Inches
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+    doc = Document()
+    sec = doc.sections[0]
+    sec.top_margin = Inches(0.65)
+    sec.bottom_margin = Inches(0.65)
+    sec.left_margin = Inches(0.72)
+    sec.right_margin = Inches(0.72)
+
+    h = doc.add_heading(title, level=0)
+    h.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    meta = doc.add_paragraph(f"生成日期：{datetime.date.today()} · 内部参考简报")
+    meta.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    for section_title, lines in parse_sections(report_text):
+        if section_title:
+            doc.add_heading(normalize_line(section_title), level=1)
+        for block_type, content in detect_blocks(lines):
+            if block_type == "table":
+                header, rows = parse_markdown_table(content)
+                if not header:
+                    continue
+                table = doc.add_table(rows=1, cols=len(header))
+                table.style = "Table Grid"
+                for i, hcell in enumerate(header):
+                    table.rows[0].cells[i].text = clean_cell_text(hcell)
+                for row in rows:
+                    cells = table.add_row().cells
+                    row = row + [""] * (len(header) - len(row))
+                    for i, cell in enumerate(row[:len(header)]):
+                        cells[i].text = clean_cell_text(cell)
+            elif block_type in {"ul", "ol"}:
+                style = "List Bullet" if block_type == "ul" else "List Number"
+                for item in content:
+                    doc.add_paragraph(clean_cell_text(item), style=style)
+            elif block_type == "p":
+                for para in content:
+                    doc.add_paragraph(clean_cell_text(para))
+
+    for para in doc.paragraphs:
+        for run in para.runs:
+            run.font.name = "Microsoft YaHei"
+            run.font.size = Pt(10.5)
+    bio = BytesIO()
+    doc.save(bio)
+    return bio.getvalue()
+
+
+def create_pdf_report(report_text: str, title: str) -> bytes:
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.cidfonts import UnicodeCIDFont
+
+    try:
+        pdfmetrics.registerFont(UnicodeCIDFont("STSong-Light"))
+        base_font = "STSong-Light"
+    except Exception:
+        base_font = "Helvetica"
+
+    bio = BytesIO()
+    doc = SimpleDocTemplate(bio, pagesize=A4, rightMargin=16*mm, leftMargin=16*mm, topMargin=16*mm, bottomMargin=16*mm)
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle("CNTitle", parent=styles["Title"], fontName=base_font, fontSize=20, leading=26, textColor=colors.HexColor("#162033"), alignment=1, spaceAfter=10)
+    meta_style = ParagraphStyle("CNMeta", parent=styles["Normal"], fontName=base_font, fontSize=8.5, leading=12, textColor=colors.HexColor("#7a879b"), alignment=1, spaceAfter=12)
+    h_style = ParagraphStyle("CNHeading", parent=styles["Heading2"], fontName=base_font, fontSize=13.5, leading=18, textColor=colors.HexColor("#23366f"), spaceBefore=12, spaceAfter=8)
+    p_style = ParagraphStyle("CNBody", parent=styles["BodyText"], fontName=base_font, fontSize=9.5, leading=15, textColor=colors.HexColor("#22314f"), spaceAfter=6)
+    bullet_style = ParagraphStyle("CNBullet", parent=p_style, leftIndent=12, firstLineIndent=-8)
+
+    story = [Paragraph(escape(title), title_style), Paragraph(f"生成日期：{datetime.date.today()} · 内部参考简报", meta_style)]
+    for section_title, lines in parse_sections(report_text):
+        if section_title:
+            story.append(Paragraph(escape(normalize_line(section_title)), h_style))
+        for block_type, content in detect_blocks(lines):
+            if block_type == "table":
+                header, rows = parse_markdown_table(content)
+                if header:
+                    data = [[Paragraph(escape(clean_cell_text(c)), p_style) for c in header]]
+                    for row in rows[:12]:
+                        row = row + [""] * (len(header) - len(row))
+                        data.append([Paragraph(escape(clean_cell_text(c)), p_style) for c in row[:len(header)]])
+                    table = Table(data, repeatRows=1)
+                    table.setStyle(TableStyle([
+                        ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#eff4ff")),
+                        ("GRID", (0,0), (-1,-1), 0.35, colors.HexColor("#dce6ff")),
+                        ("VALIGN", (0,0), (-1,-1), "TOP"),
+                        ("LEFTPADDING", (0,0), (-1,-1), 5),
+                        ("RIGHTPADDING", (0,0), (-1,-1), 5),
+                    ]))
+                    story.append(table)
+                    story.append(Spacer(1, 8))
+            elif block_type in {"ul", "ol"}:
+                for idx, item in enumerate(content, start=1):
+                    prefix = "•" if block_type == "ul" else f"{idx}."
+                    story.append(Paragraph(f"{prefix} {escape(clean_cell_text(item))}", bullet_style))
+            elif block_type == "p":
+                for para in content:
+                    story.append(Paragraph(escape(clean_cell_text(para)), p_style))
+    doc.build(story)
+    return bio.getvalue()
+
+
+def create_pptx_report(report_text: str, title: str) -> bytes:
+    from pptx import Presentation
+    from pptx.util import Inches, Pt
+    from pptx.enum.text import PP_ALIGN
+    from pptx.dml.color import RGBColor
+
+    prs = Presentation()
+    prs.slide_width = Inches(13.333)
+    prs.slide_height = Inches(7.5)
+
+    def add_title(slide, text):
+        box = slide.shapes.add_textbox(Inches(0.65), Inches(0.38), Inches(12.0), Inches(0.55))
+        p = box.text_frame.paragraphs[0]
+        p.text = text
+        p.font.name = "Microsoft YaHei"
+        p.font.size = Pt(24)
+        p.font.bold = True
+        p.font.color.rgb = RGBColor(35, 54, 111)
+        return box
+
+    def add_footer(slide):
+        box = slide.shapes.add_textbox(Inches(0.65), Inches(7.03), Inches(12.0), Inches(0.22))
+        p = box.text_frame.paragraphs[0]
+        p.text = "Signal Studio · Evidence-based product brief"
+        p.font.name = "Microsoft YaHei"
+        p.font.size = Pt(8)
+        p.font.color.rgb = RGBColor(122, 135, 155)
+        p.alignment = PP_ALIGN.RIGHT
+
+    def add_bullets(slide, items, x=0.85, y=1.25, w=11.7, h=5.6, font_size=16):
+        box = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
+        tf = box.text_frame
+        tf.clear()
+        for idx, item in enumerate(items):
+            p = tf.paragraphs[0] if idx == 0 else tf.add_paragraph()
+            p.text = item[:180]
+            p.font.name = "Microsoft YaHei"
+            p.font.size = Pt(font_size)
+            p.font.color.rgb = RGBColor(34, 49, 79)
+            p.level = 0
+        return box
+
+    # Cover
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    bg = slide.background.fill
+    bg.solid()
+    bg.fore_color.rgb = RGBColor(248, 251, 255)
+    box = slide.shapes.add_textbox(Inches(0.8), Inches(1.7), Inches(11.8), Inches(1.6))
+    p = box.text_frame.paragraphs[0]
+    p.text = title
+    p.font.name = "Microsoft YaHei"
+    p.font.size = Pt(34)
+    p.font.bold = True
+    p.font.color.rgb = RGBColor(22, 32, 51)
+    sub = slide.shapes.add_textbox(Inches(0.82), Inches(3.35), Inches(10.5), Inches(0.45))
+    sp = sub.text_frame.paragraphs[0]
+    sp.text = f"生成日期：{datetime.date.today()} · 内部汇报版"
+    sp.font.name = "Microsoft YaHei"
+    sp.font.size = Pt(13)
+    sp.font.color.rgb = RGBColor(102, 116, 138)
+    add_footer(slide)
+
+    sections = parse_sections(report_text)
+    summary = extract_summary_points(sections, max_items=5)
+    if summary:
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_title(slide, "老板先看")
+        add_bullets(slide, [f"• {s}" for s in summary], font_size=17)
+        add_footer(slide)
+
+    # One slide per useful section, trimmed
+    for section_title, lines in sections[1:8]:
+        blocks = detect_blocks(lines)
+        items = []
+        for block_type, content in blocks:
+            if block_type == "table":
+                header, rows = parse_markdown_table(content)
+                for row in rows[:5]:
+                    items.append("｜".join(clean_cell_text(c) for c in row[:3]))
+            elif block_type in {"ul", "ol"}:
+                items.extend([clean_cell_text(i) for i in content[:6]])
+            elif block_type == "p":
+                items.extend([clean_cell_text(i) for i in content[:4]])
+            if len(items) >= 7:
+                break
+        if not items:
+            continue
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_title(slide, normalize_line(section_title)[:26])
+        add_bullets(slide, [f"• {i}" for i in items[:7]], font_size=14)
+        add_footer(slide)
+
+    bio = BytesIO()
+    prs.save(bio)
+    return bio.getvalue()
+
+
+def extract_boss_summary(report_text: str, title: str) -> str:
+    sections = parse_sections(report_text)
+    points = extract_summary_points(sections, max_items=5)
+    if not points:
+        # Fallback: first few non-table lines
+        points = []
+        for _, lines in sections[:2]:
+            for block_type, content in detect_blocks(lines):
+                if block_type in {"ul", "ol", "p"}:
+                    points.extend(content)
+                if len(points) >= 5:
+                    break
+            if len(points) >= 5:
+                break
+    body = "\n".join([f"{idx}. {clean_cell_text(p)}" for idx, p in enumerate(points[:5], start=1)])
+    return f"【{title}】\n{body}"
+
+
 def render_report_preview(report_text: str, title: str):
     st.markdown(build_report_body_html(report_text, title), unsafe_allow_html=True)
-    action_cols = st.columns([1.3, 1, 1.2])
-    with action_cols[0]:
-        st.markdown(generate_html_report(report_text, title), unsafe_allow_html=True)
-    with action_cols[1]:
-        st.download_button(
-            "下载 Markdown",
-            data=report_text.encode("utf-8"),
-            file_name=sanitize_filename(title) + ".md",
-            mime="text/markdown",
-            use_container_width=True,
-        )
-    with action_cols[2]:
-        st.caption("导出的 HTML 可直接发给老板，浏览器打开后也方便另存为 PDF。")
+
+    st.markdown("#### 导出与复用")
+    html_doc = build_download_html(report_text, title).encode("utf-8")
+    base_name = sanitize_filename(title)
+    export_cols = st.columns(5)
+    with export_cols[0]:
+        st.download_button("HTML / 可转 PDF", html_doc, file_name=base_name + ".html", mime="text/html", use_container_width=True)
+    with export_cols[1]:
+        st.download_button("Word", create_docx_report(report_text, title), file_name=base_name + ".docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
+    with export_cols[2]:
+        st.download_button("PDF", create_pdf_report(report_text, title), file_name=base_name + ".pdf", mime="application/pdf", use_container_width=True)
+    with export_cols[3]:
+        st.download_button("PPT", create_pptx_report(report_text, title), file_name=base_name + ".pptx", mime="application/vnd.openxmlformats-officedocument.presentationml.presentation", use_container_width=True)
+    with export_cols[4]:
+        st.download_button("Markdown", report_text.encode("utf-8"), file_name=base_name + ".md", mime="text/markdown", use_container_width=True)
+
+    with st.expander("老板版摘要 / 可复制", expanded=True):
+        st.text_area("复制这段发微信/飞书/邮件", value=extract_boss_summary(report_text, title), height=160)
 
     with st.expander("查看原始 Markdown 报告", expanded=False):
         st.code(report_text, language="markdown")
@@ -1056,7 +1347,7 @@ with st.sidebar:
         ["用户痛点", "卖点感知", "价格价值感", "品牌认知", "系统/软件体验", "影像/性能", "外观设计", "渠道/服务", "传播话术"],
         default=["用户痛点", "卖点感知", "价格价值感", "传播话术"],
     )
-    st.markdown("<div class='micro-tip'>配置栏默认收起。接口地址和模型代号均为预设选择，用户不用手动输入。</div>", unsafe_allow_html=True)
+    st.markdown("<div class='micro-tip'>配置栏默认收起。接口和模型均为预设选择；如需图片分析，请选择支持视觉输入的模型。</div>", unsafe_allow_html=True)
 
 
 # =========================
@@ -1085,12 +1376,20 @@ if mode == "单品深度研判":
             height=300,
             placeholder="建议按平台分段粘贴，例如：\n【小红书】……\n【微博】……\n【B站】……\n【京东】……",
         )
+        single_images = st.file_uploader(
+            "图片证据（可选）",
+            type=["png", "jpg", "jpeg", "webp"],
+            accept_multiple_files=True,
+            key="single_images",
+            help="可上传评论截图、测评截图、产品图、海报、表格截图等。需选择支持视觉输入的模型。",
+        )
+        render_uploaded_images(single_images, "单品图片证据")
 
         if st.button("生成单品研判报告", type="primary", use_container_width=True):
-            if is_ready_to_analyze(api_key, product_name, user_input):
-                with st.spinner("正在基于真实语料生成研判报告..."):
-                    prompt = build_single_prompt(product_name.strip(), product_type, focus, user_input.strip())
-                    report = analyze_with_llm(prompt, api_key, model_name, api_base)
+            if is_ready_to_analyze_multimodal(api_key, [product_name], [(product_name or "单品", user_input, single_images)]):
+                with st.spinner("正在基于真实语料和图片证据生成研判报告..."):
+                    prompt = build_single_prompt(product_name.strip(), product_type, focus, user_input.strip() or "暂无文字语料，仅使用上传图片证据。")
+                    report = analyze_with_llm(prompt, api_key, model_name, api_base, image_groups=[(product_name.strip(), single_images)])
                     title = f"{product_name.strip()}_单品研判简报"
                     st.markdown("### 报告预览")
                     render_report_preview(report, title)
@@ -1108,6 +1407,13 @@ else:
                     q = compose_query(main_product, "全网口碑")
                     render_link_buttons(build_search_links(q, ["UGC 社媒", "视频测评"])[:6], columns_per_row=3)
             main_input = st.text_area("本品真实语料", height=300, placeholder="粘贴本品评论/测评/用户反馈...")
+            main_images = st.file_uploader(
+                "本品图片证据（可选）",
+                type=["png", "jpg", "jpeg", "webp"],
+                accept_multiple_files=True,
+                key="main_images",
+            )
+            render_uploaded_images(main_images, "本品图片证据")
 
         with col2:
             competitor_product = st.text_input("竞品名称", key="competitor_product", placeholder="例如：OPPO Find N6 / 华为 Mate X 系列")
@@ -1116,14 +1422,35 @@ else:
                     q = compose_query(competitor_product, "全网口碑")
                     render_link_buttons(build_search_links(q, ["UGC 社媒", "视频测评"])[:6], columns_per_row=3)
             competitor_input = st.text_area("竞品真实语料", height=300, placeholder="粘贴竞品评论/测评/用户反馈...")
+            competitor_images = st.file_uploader(
+                "竞品图片证据（可选）",
+                type=["png", "jpg", "jpeg", "webp"],
+                accept_multiple_files=True,
+                key="competitor_images",
+            )
+            render_uploaded_images(competitor_images, "竞品图片证据")
 
         render_evidence_helper(main_product or competitor_product)
 
         if st.button("生成竞品攻防报告", type="primary", use_container_width=True):
-            if is_ready_to_analyze(api_key, main_product, competitor_product, main_input, competitor_input):
-                with st.spinner("正在构建竞品攻防研判报告..."):
-                    prompt = build_compare_prompt(main_product.strip(), competitor_product.strip(), product_type, focus, main_input.strip(), competitor_input.strip())
-                    report = analyze_with_llm(prompt, api_key, model_name, api_base)
+            evidence_groups = [(main_product or "本品", main_input, main_images), (competitor_product or "竞品", competitor_input, competitor_images)]
+            if is_ready_to_analyze_multimodal(api_key, [main_product, competitor_product], evidence_groups):
+                with st.spinner("正在基于真实语料和图片证据构建竞品攻防报告..."):
+                    prompt = build_compare_prompt(
+                        main_product.strip(),
+                        competitor_product.strip(),
+                        product_type,
+                        focus,
+                        main_input.strip() or "暂无本品文字语料，仅使用本品上传图片证据。",
+                        competitor_input.strip() or "暂无竞品文字语料，仅使用竞品上传图片证据。",
+                    )
+                    report = analyze_with_llm(
+                        prompt,
+                        api_key,
+                        model_name,
+                        api_base,
+                        image_groups=[(f"本品：{main_product.strip()}", main_images), (f"竞品：{competitor_product.strip()}", competitor_images)],
+                    )
                     title = f"{main_product.strip()}_vs_{competitor_product.strip()}_竞品攻防简报"
                     st.markdown("### 报告预览")
                     render_report_preview(report, title)
