@@ -1,4 +1,3 @@
-
 import streamlit as st
 import requests
 import datetime
@@ -35,7 +34,7 @@ def inject_css():
             --blue-soft: #edf2ff;
             --warm: #b88758;
             --line: rgba(93,120,255,0.14);
-            --panel: rgba(255,255,255,0.86);
+            --panel: rgba(255,255,255,0.88);
             --shadow: 0 22px 58px rgba(22, 32, 51, 0.08);
         }
 
@@ -133,34 +132,6 @@ def inject_css():
             font-weight: 650;
         }
 
-        .soft-card {
-            padding: 20px;
-            border-radius: 24px;
-            background: var(--panel);
-            border: 1px solid rgba(93,120,255,0.10);
-            box-shadow: var(--shadow);
-            margin-bottom: 18px;
-        }
-        .card-title {
-            color: var(--ink);
-            font-size: 22px;
-            font-weight: 760;
-            margin-bottom: 4px;
-        }
-        .card-desc {
-            color: var(--muted);
-            font-size: 13px;
-            line-height: 1.72;
-            margin-bottom: 6px;
-        }
-        .section-kicker {
-            font-size: 12px;
-            letter-spacing: 0.18em;
-            color: var(--blue);
-            font-weight: 800;
-            text-transform: uppercase;
-            margin: 10px 0 8px;
-        }
         .query-preview {
             padding: 10px 12px;
             background: var(--blue-soft);
@@ -231,13 +202,7 @@ def inject_css():
             border: 1px solid rgba(93,120,255,0.10) !important;
             border-radius: 18px !important;
         }
-        .report-preview {
-            background: rgba(255,255,255,0.86);
-            border: 1px solid rgba(93,120,255,0.10);
-            border-radius: 24px;
-            padding: 22px;
-            box-shadow: var(--shadow);
-        }
+
         .download-link {
             display: inline-block;
             text-decoration: none !important;
@@ -260,9 +225,148 @@ def inject_css():
         }
         .micro-tip { color: var(--muted); font-size: 12px; line-height: 1.7; }
 
+        .report-shell {
+            background: rgba(255,255,255,0.94);
+            border: 1px solid rgba(93,120,255,0.10);
+            border-radius: 26px;
+            box-shadow: 0 28px 64px rgba(22,32,51,0.08);
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        .report-head {
+            padding: 26px 28px 22px;
+            border-bottom: 1px solid rgba(93,120,255,0.10);
+            background: linear-gradient(180deg, rgba(245,248,255,0.95) 0%, rgba(255,255,255,0.92) 100%);
+        }
+        .report-kicker {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.22em;
+            color: #5d78ff;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .report-title {
+            font-size: 30px;
+            line-height: 1.15;
+            font-weight: 760;
+            color: #162033;
+            margin: 0 0 8px;
+        }
+        .report-meta {
+            color: #7a879b;
+            font-size: 12px;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 12px;
+            padding: 18px 28px 6px;
+        }
+        .summary-card {
+            padding: 16px 16px 14px;
+            background: linear-gradient(180deg, #f7faff 0%, #ffffff 100%);
+            border: 1px solid rgba(93,120,255,0.10);
+            border-radius: 18px;
+        }
+        .summary-card .num {
+            font-size: 11px;
+            color: #5d78ff;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .summary-card p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #162033;
+        }
+        .report-body {
+            padding: 8px 28px 28px;
+        }
+        .report-section {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(93,120,255,0.08);
+        }
+        .report-section h2 {
+            margin: 0 0 12px;
+            font-size: 19px;
+            line-height: 1.35;
+            color: #23366f;
+            font-weight: 760;
+        }
+        .report-section p {
+            margin: 8px 0;
+            line-height: 1.78;
+            font-size: 14px;
+            color: #22314f;
+        }
+        .report-list {
+            margin: 0;
+            padding-left: 1.2rem;
+        }
+        .report-list li {
+            margin: 8px 0;
+            line-height: 1.76;
+            color: #22314f;
+            font-size: 14px;
+        }
+        .report-quote {
+            background: #fbf8f3;
+            border: 1px solid rgba(184,135,88,0.16);
+            border-left: 3px solid #b88758;
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin: 10px 0;
+            color: #32405c;
+            font-size: 14px;
+            line-height: 1.76;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid rgba(93,120,255,0.10);
+            border-radius: 18px;
+            margin-top: 12px;
+        }
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            background: #fff;
+        }
+        .report-table th,
+        .report-table td {
+            padding: 12px 12px;
+            text-align: left;
+            vertical-align: top;
+            border-bottom: 1px solid rgba(93,120,255,0.08);
+            border-right: 1px solid rgba(93,120,255,0.06);
+            line-height: 1.72;
+            color: #22314f;
+        }
+        .report-table th {
+            background: #eff4ff;
+            color: #162033;
+            font-weight: 760;
+        }
+        .report-table tr:last-child td { border-bottom: none; }
+        .report-table th:last-child, .report-table td:last-child { border-right: none; }
+        .report-footer {
+            padding: 18px 28px 24px;
+            font-size: 11px;
+            color: #7a879b;
+            border-top: 1px solid rgba(93,120,255,0.08);
+            letter-spacing: 0.08em;
+        }
+
         @media (max-width: 800px) {
             .top-hero { padding: 22px; }
             .hero-title { font-size: 38px; }
+            .report-title { font-size: 24px; }
+            .summary-grid, .report-body, .report-head, .report-footer { padding-left: 18px; padding-right: 18px; }
         }
         </style>
         """,
@@ -391,12 +495,12 @@ def render_header():
             <div class="hero-title">Strategy <span>Signal Deck</span></div>
             <p class="hero-desc">
             轻量产品情报台：先用便携搜索坞快速取证，再粘贴真实语料生成单品研判或竞品攻防。
-            页面已简化成“搜索—整理—分析”三步，不再堆叠复杂装饰。
+            这一版重点优化了报告产出：页面更克制、版式更干净、内容更适合直接给老板看。
             </p>
             <div class="mini-steps">
                 <span class="mini-chip">01 搜索取证</span>
                 <span class="mini-chip">02 粘贴语料</span>
-                <span class="mini-chip">03 生成简报</span>
+                <span class="mini-chip">03 生成老板可读简报</span>
             </div>
         </section>
         """,
@@ -486,6 +590,7 @@ def render_evidence_helper(product_name: str):
             <div class="hint-box">
             建议至少收集 3 类语料：社媒真实吐槽、媒体/博主测评摘录、电商评价或购买问答。
             分析前不要把评论过度润色，保留原话更容易生成有效洞察。
+            如果是给老板看，建议优先贴“最能代表主流情绪”的评论，而不是堆很多重复句子。
             </div>
             """,
             unsafe_allow_html=True,
@@ -505,12 +610,12 @@ def analyze_with_llm(prompt: str, api_key: str, model_name: str, api_base: str):
             {
                 "role": "system",
                 "content": (
-                    "你是一名严谨的产品策略与用户舆情分析师。"
+                    "你是一名严谨的产品策略与用户舆情分析师，服务对象是业务负责人、产品负责人和市场负责人。"
                     "你只能根据用户提供的真实语料进行分析，严禁编造参数、销量、配置、发布时间、品牌动作或用户评价。"
                     "如果语料中没有提到某个信息，必须写‘暂无提及’。"
-                    "输出要像产品/市场团队内部简报：结论明确、问题分层、建议可执行。"
-                    "每个核心判断都要尽量对应语料证据。"
-                    "表格请使用 Markdown 表格。"
+                    "输出必须是老板可直接阅读的内部简报风格：少废话、少空话、信息密度高、判断清晰、动作明确。"
+                    "不要写长篇铺垫、方法说明、免责声明、过程性废话。"
+                    "每个核心判断尽量给出对应证据。表格请使用 Markdown 表格。"
                 ),
             },
             {"role": "user", "content": prompt},
@@ -529,44 +634,52 @@ def analyze_with_llm(prompt: str, api_key: str, model_name: str, api_base: str):
 def build_single_prompt(product_name: str, product_type: str, focus: list[str], corpus: str) -> str:
     focus_text = "、".join(focus) if focus else "用户体验、核心卖点、负面反馈、购买阻力、传播机会"
     return f"""
-请仅根据下方语料，撰写《{product_name} 单品深度研判报告》。
+请仅根据下方语料，撰写《{product_name} 单品研判简报》。
 
 产品名称：{product_name}
 产品类型：{product_type}
 重点关注：{focus_text}
 
-输出要求：
-- 严禁编造参数、销量、发布时间、官方动作或用户评价。
-- 所有判断必须能从语料中找到依据。
-- 如果信息不足，明确写“暂无提及”。
-- 报告要像产品/市场/PMM 内部简报，结论清晰、动作可执行。
+请严格遵守以下要求：
+- 只基于真实语料判断，严禁补充外部常识、产品参数、销量、发布时间、品牌策略等未在语料出现的信息。
+- 这份报告默认直接给老板看，必须克制、简洁、专业，不要写空话套话。
+- 不要复述任务，不要写“以下是报告”“基于以上分析”等废话。
+- 每一条结论尽量给出证据摘录。
+- 如果某部分证据不足，统一简洁写“暂无提及”，不要重复解释。
 
-输出结构：
-一、核心结论摘要
-- 用 3 条以内说清楚当前用户反馈的主线。
+输出结构请固定如下：
 
-二、用户原声直击
-- 提取 3 条最有代表性的原话或近似原话。
-- 如果语料中没有明显原声，写“暂无提及”。
+一、老板先看
+- 用 3—5 条要点概括当前最重要的判断。
+- 每条尽量包含：现象 / 判断 / 对业务的意义。
 
-三、问题反馈矩阵
+二、用户反馈总览
 请输出 Markdown 表格，字段为：
-| 维度 | 用户反馈/痛点 | 证据摘录 | 严重程度 | 改进紧迫性 |
-维度可根据语料自适应，例如：外观设计、影像/性能、系统体验、价格价值感、服务/渠道、品牌认知等。
+| 主题 | 情绪倾向 | 用户反馈要点 | 证据摘录 | 对业务的影响 |
+主题可自适应，如外观设计、影像/性能、系统体验、价格价值感、服务/渠道、品牌认知、购买决策等。
 
-四、机会点与可放大的卖点
-- 只写语料中能够支撑的机会点。
-- 不允许虚构产品参数。
+三、关键风险
+请输出 Markdown 表格，字段为：
+| 风险点 | 具体表现 | 证据摘录 | 风险等级 | 建议动作 |
+只列真正值得管理层关注的点，不要凑数。
 
-五、产品/营销动作建议
-- 分为“短期可做”“中期优化”“传播话术建议”。
-- 每条建议必须能对应到语料中的问题或机会。
+四、可放大的卖点 / 机会
+- 提炼 3—5 条有证据支撑的机会点。
+- 说明为什么它值得放大。
 
-六、下一轮取证建议
-- 说明还应该去哪些平台/关键词补充搜索。
+五、建议动作
+请分成三个小部分输出：
+- 产品侧：短期该优化什么
+- 营销侧：传播上该强调/规避什么
+- 取证侧：下一轮还要补什么语料
+每条建议都尽量与语料对应。
+
+六、代表性用户原声
+- 提取 3—5 条最有代表性的用户原话或高还原度近似原话。
+- 不要过多，重质不重量。
 
 七、信息缺口
-- 列出当前语料不足以判断的内容。
+- 用 2—4 条列出当前还无法判断、但决策上可能重要的信息。
 
 真实语料如下：
 {corpus}
@@ -576,47 +689,50 @@ def build_single_prompt(product_name: str, product_type: str, focus: list[str], 
 def build_compare_prompt(main_product: str, competitor_product: str, product_type: str, focus: list[str], main_corpus: str, competitor_corpus: str) -> str:
     focus_text = "、".join(focus) if focus else "用户体验、核心卖点、负面反馈、购买阻力、传播机会"
     return f"""
-请仅根据下方两组语料，撰写《{main_product} vs {competitor_product} 竞品攻防研判报告》。
+请仅根据下方两组语料，撰写《{main_product} vs {competitor_product} 竞品攻防简报》。
 
 本品：{main_product}
 竞品：{competitor_product}
 产品类型：{product_type}
 重点关注：{focus_text}
 
-输出要求：
-- 严禁编造参数、销量、发布时间、官方动作或用户评价。
-- 对比结论必须同时考虑本品语料与竞品语料。
-- 如果某一方证据不足，明确写“暂无提及”。
-- 不要为了形成对比而强行制造差异。
+请严格遵守以下要求：
+- 只根据用户提供语料判断，严禁补充外部参数、销量、发布时间、品牌动作或行业常识。
+- 这份内容默认直接给老板看，要像内部策略简报：结论明确、语言克制、可直接用于讨论。
+- 不要写长篇铺垫，不要凑字数，不要强行制造差异。
+- 若某一方证据不足，简洁写“暂无提及”。
+- 每个对比结论尽量同时体现本品与竞品证据。
 
-输出结构：
-一、对比结论摘要
-- 用 3 条以内说清楚本品与竞品的主要差异。
+输出结构请固定如下：
 
-二、双方用户原声
-- 分别列出本品和竞品各 2 条最有代表性的原声。
-- 如果某一方语料不足，写“暂无提及”。
+一、老板先看
+- 用 3—5 条说清楚本品当前最值得管理层关注的攻防结论。
 
-三、竞品攻防矩阵
+二、核心对比总览
 请输出 Markdown 表格，字段为：
-| 对比维度 | {main_product} 用户反馈 | {competitor_product} 用户反馈 | 本品风险 | 可用攻防策略 |
-维度根据语料自适应，例如：外观设计、性能、系统、价格、品牌、高端认可度、服务体验等。
+| 对比维度 | {main_product} 用户反馈 | {competitor_product} 用户反馈 | 结论判断 | 对业务的启示 |
+维度根据语料自适应，如外观设计、性能、系统、价格、品牌、高端认知、渠道服务等。
 
-四、本品应重点防守的点
-- 只基于语料，不虚构。
+三、本品风险点（需要防守）
+请输出 Markdown 表格，字段为：
+| 风险点 | 具体表现 | 证据摘录 | 风险等级 | 防守动作 |
 
-五、本品可主动进攻的点
-- 只基于语料，不虚构。
+四、本品机会点（可以进攻）
+- 提炼 3—5 条本品可主动进攻的点。
+- 每条说明对应依据与可用场景。
 
-六、传播话术建议
-- 给出 3 条以内适合产品/市场团队使用的话术方向。
-- 不得出现无证据支撑的夸张表达。
+五、建议动作
+请分成三个小部分输出：
+- 产品侧：需优先补的短板
+- 营销侧：传播上应强调/回避的点
+- 取证侧：还应补哪些平台和关键词
 
-七、下一轮取证建议
-- 说明双方还应补充哪些平台/关键词。
+六、双方代表性用户原声
+- 本品列 2—3 条，竞品列 2—3 条。
+- 只保留最能说明问题的内容。
 
-八、信息缺口
-- 列出当前语料不足以判断的内容。
+七、信息缺口
+- 用 2—4 条列出当前证据不足、但会影响判断的内容。
 
 【本品真实语料】
 {main_corpus}
@@ -626,137 +742,297 @@ def build_compare_prompt(main_product: str, competitor_product: str, product_typ
 """.strip()
 
 
-def generate_html_report(text_content: str, title: str):
-    html_template = """
-    <html><head><meta charset="utf-8"><style>
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-        background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
-        padding: 40px;
-        color: #162033;
-    }
-    .report-card {
-        max-width: 980px;
-        margin: 0 auto;
-        background: rgba(255,255,255,0.96);
-        padding: 54px;
-        border-radius: 24px;
-        border: 1px solid rgba(93,120,255,0.12);
-        box-shadow: 0 30px 80px rgba(17, 28, 55, 0.12);
-    }
-    .eyebrow {
-        text-align: center;
-        color: #5d78ff;
-        font-size: 11px;
-        letter-spacing: 0.28em;
-        text-transform: uppercase;
-        margin-bottom: 16px;
-        font-weight: 700;
-    }
-    h1 {
-        text-align: center;
-        font-weight: 700;
-        font-size: 34px;
-        color: #162033;
-        margin: 0 0 10px 0;
-        letter-spacing: -0.03em;
-    }
-    .meta {
-        text-align: center;
-        color: #697385;
-        font-size: 12px;
-        margin-bottom: 34px;
-        border-bottom: 1px solid rgba(93,120,255,0.12);
-        padding-bottom: 22px;
-    }
-    h2 {
-        font-weight: 700;
-        font-size: 22px;
-        color: #23366f;
-        margin: 34px 0 16px 0;
-        padding-top: 18px;
-        border-top: 1px solid rgba(93,120,255,0.12);
-    }
-    .quote-box {
-        background: #f5efe9;
-        border-left: 3px solid #b88758;
-        padding: 15px 18px;
-        margin: 14px 0;
-        color: #3a465c;
-        font-size: 15px;
-        line-height: 1.75;
-        border-radius: 12px;
-    }
-    p { line-height: 1.82; margin: 9px 0; }
-    table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 13px; }
-    th, td { padding: 13px; border: 1px solid rgba(93,120,255,0.12); text-align: left; vertical-align: top; }
-    th { background: #eff4ff; font-weight: 700; color: #162033; }
-    .footer {
-        text-align: center;
-        margin-top: 46px;
-        padding-top: 20px;
-        border-top: 1px solid rgba(93,120,255,0.12);
-        font-size: 11px;
-        color: #697385;
-        letter-spacing: 0.08em;
-    }
-    </style></head><body>
-    <div class="report-card">
-        <div class="eyebrow">SIGNAL STUDIO · PRODUCT STRATEGY BRIEF</div>
-        <h1>{{TITLE}}</h1>
-        <div class="meta">生成日期：{{DATE}} · 基于用户提供语料自动生成，仅供内部分析参考</div>
-        {{BODY}}
-        <div class="footer">EVIDENCE-BASED · STRUCTURED · STRATEGY-READY</div>
-    </div></body></html>
-    """
+# =========================
+# Report formatting helpers
+# =========================
+def normalize_line(line: str) -> str:
+    line = line.strip()
+    line = re.sub(r"^#+\s*", "", line)
+    line = line.replace("**", "")
+    line = line.replace("__", "")
+    return line.strip()
 
-    clean_text = re.sub(r"\|[-: ]+\|", "", text_content)
-    clean_text = re.sub(r"[*#]", "", clean_text)
 
-    body_html = ""
-    lines = clean_text.split("\n")
-    in_table = False
-    is_quote_section = False
+def is_section_heading(line: str) -> bool:
+    line = normalize_line(line)
+    return bool(re.match(r"^[一二三四五六七八九十]+[、.．]\s*", line))
 
-    for line in lines:
-        line = line.strip()
+
+def parse_sections(text_content: str):
+    sections = []
+    current_title = ""
+    current_lines: list[str] = []
+    for raw in text_content.splitlines():
+        line = normalize_line(raw)
         if not line:
+            current_lines.append("")
+            continue
+        if is_section_heading(line):
+            if current_title or current_lines:
+                sections.append((current_title, current_lines))
+            current_title = line
+            current_lines = []
+        else:
+            current_lines.append(line)
+    if current_title or current_lines:
+        sections.append((current_title, current_lines))
+    return sections
+
+
+def detect_blocks(lines: list[str]):
+    cleaned = [normalize_line(l) for l in lines]
+    blocks = []
+    i = 0
+    while i < len(cleaned):
+        line = cleaned[i].strip()
+        if not line:
+            i += 1
             continue
 
-        if any(line.startswith(prefix) for prefix in ["一、", "二、", "三、", "四、", "五、", "六、", "七、", "八、"]):
-            if in_table:
-                body_html += "</tbody></table>"
-                in_table = False
-            is_quote_section = "原声" in line or "直击" in line
-            body_html += f"<h2>{escape(line)}</h2>"
-        elif "|" in line:
-            cells = [escape(c.strip()) for c in line.split("|") if c.strip()]
-            if len(cells) >= 2:
-                row = "<tr>" + "".join([f"<td>{c}</td>" for c in cells]) + "</tr>"
-                if not in_table:
-                    body_html += "<table><thead>" + row.replace("td>", "th>") + "</thead><tbody>"
-                    in_table = True
-                else:
-                    body_html += row
-        else:
-            if in_table:
-                body_html += "</tbody></table>"
-                in_table = False
-            if is_quote_section and not line.startswith("-"):
-                body_html += f"<div class='quote-box'>“{escape(line)}”</div>"
+        if (
+            "|" in line and i + 1 < len(cleaned)
+            and "|" in cleaned[i + 1]
+            and re.fullmatch(r"[|:\-\s]+", cleaned[i + 1]) is not None
+        ):
+            table_lines = [line, cleaned[i + 1].strip()]
+            i += 2
+            while i < len(cleaned) and "|" in cleaned[i].strip():
+                table_lines.append(cleaned[i].strip())
+                i += 1
+            blocks.append(("table", table_lines))
+            continue
+
+        if re.match(r"^[-•—*]\s+", line):
+            items = []
+            while i < len(cleaned) and re.match(r"^[-•—*]\s+", cleaned[i].strip()):
+                items.append(re.sub(r"^[-•—*]\s+", "", cleaned[i].strip()))
+                i += 1
+            blocks.append(("ul", items))
+            continue
+
+        if re.match(r"^\d+[、.．]\s*", line):
+            items = []
+            while i < len(cleaned) and re.match(r"^\d+[、.．]\s*", cleaned[i].strip()):
+                items.append(re.sub(r"^\d+[、.．]\s*", "", cleaned[i].strip()))
+                i += 1
+            blocks.append(("ol", items))
+            continue
+
+        paras = []
+        while i < len(cleaned):
+            probe = cleaned[i].strip()
+            if not probe:
+                if paras:
+                    i += 1
+                    break
+                i += 1
+                continue
+            if (
+                re.match(r"^[-•—*]\s+", probe)
+                or re.match(r"^\d+[、.．]\s*", probe)
+                or (
+                    "|" in probe and i + 1 < len(cleaned)
+                    and "|" in cleaned[i + 1]
+                    and re.fullmatch(r"[|:\-\s]+", cleaned[i + 1]) is not None
+                )
+            ):
+                break
+            paras.append(probe)
+            i += 1
+        if paras:
+            blocks.append(("p", paras))
+    return blocks
+
+
+def parse_markdown_table(table_lines: list[str]):
+    rows = []
+    for idx, line in enumerate(table_lines):
+        if idx == 1 and re.fullmatch(r"[|:\-\s]+", line):
+            continue
+        parts = [normalize_line(c) for c in line.split("|")]
+        parts = [p for p in parts if p != ""]
+        if parts:
+            rows.append(parts)
+    if not rows:
+        return [], []
+    header = rows[0]
+    body = rows[1:]
+    return header, body
+
+
+def render_table_html(table_lines: list[str]) -> str:
+    header, body = parse_markdown_table(table_lines)
+    if not header:
+        return ""
+    ths = "".join(f"<th>{escape(h)}</th>" for h in header)
+    body_rows = ""
+    for row in body:
+        if len(row) < len(header):
+            row = row + [""] * (len(header) - len(row))
+        tds = "".join(f"<td>{escape(cell)}</td>" for cell in row[:len(header)])
+        body_rows += f"<tr>{tds}</tr>"
+    return f"<div class='table-wrap'><table class='report-table'><thead><tr>{ths}</tr></thead><tbody>{body_rows}</tbody></table></div>"
+
+
+def render_blocks_html(title: str, lines: list[str]) -> str:
+    title_clean = normalize_line(title)
+    quote_mode = any(key in title_clean for key in ["原声", "用户原声", "代表性"])
+    html_parts = []
+    for block_type, content in detect_blocks(lines):
+        if block_type == "table":
+            html_parts.append(render_table_html(content))
+        elif block_type == "ul":
+            if quote_mode:
+                for item in content:
+                    html_parts.append(f"<div class='report-quote'>“{escape(item)}”</div>")
             else:
-                body_html += f"<p>{escape(line)}</p>"
+                items = "".join(f"<li>{escape(item)}</li>" for item in content)
+                html_parts.append(f"<ul class='report-list'>{items}</ul>")
+        elif block_type == "ol":
+            items = "".join(f"<li>{escape(item)}</li>" for item in content)
+            html_parts.append(f"<ol class='report-list'>{items}</ol>")
+        elif block_type == "p":
+            for para in content:
+                if quote_mode and para and not any(tag in para for tag in ["：", ":"]) and len(para) < 80:
+                    html_parts.append(f"<div class='report-quote'>“{escape(para)}”</div>")
+                else:
+                    html_parts.append(f"<p>{escape(para)}</p>")
+    return "".join(html_parts)
 
-    if in_table:
-        body_html += "</tbody></table>"
 
-    res = html_template.replace("{{TITLE}}", escape(title))
-    res = res.replace("{{DATE}}", str(datetime.date.today()))
-    res = res.replace("{{BODY}}", body_html)
+def extract_summary_points(sections: list[tuple[str, list[str]]], max_items: int = 4):
+    if not sections:
+        return []
+    first_title, first_lines = sections[0]
+    title_text = normalize_line(first_title)
+    if not any(k in title_text for k in ["老板先看", "核心结论", "对比结论"]):
+        return []
+    points = []
+    for block_type, content in detect_blocks(first_lines):
+        if block_type in {"ul", "ol"}:
+            points.extend(content)
+        elif block_type == "p":
+            points.extend(content)
+        if len(points) >= max_items:
+            break
+    return [p for p in points[:max_items] if p]
 
-    b64 = base64.b64encode(res.encode("utf-8")).decode()
+
+def build_report_body_html(text_content: str, title: str) -> str:
+    sections = parse_sections(text_content)
+    summary_points = extract_summary_points(sections)
+
+    summary_html = ""
+    if summary_points:
+        cards = []
+        for idx, point in enumerate(summary_points, start=1):
+            cards.append(
+                f"<div class='summary-card'><div class='num'>Key {idx:02d}</div><p>{escape(point)}</p></div>"
+            )
+        summary_html = f"<div class='summary-grid'>{''.join(cards)}</div>"
+
+    body_sections = []
+    for idx, (section_title, section_lines) in enumerate(sections):
+        title_clean = normalize_line(section_title) or f"部分 {idx+1}"
+        if idx == 0 and summary_points:
+            section_html = render_blocks_html(section_title, section_lines)
+            # keep section but summary already highlighted visually
+            body_sections.append(
+                f"<section class='report-section'><h2>{escape(title_clean)}</h2>{section_html}</section>"
+            )
+        else:
+            section_html = render_blocks_html(section_title, section_lines)
+            body_sections.append(
+                f"<section class='report-section'><h2>{escape(title_clean)}</h2>{section_html}</section>"
+            )
+
+    if not body_sections:
+        body_sections = [f"<section class='report-section'><p>{escape(text_content)}</p></section>"]
+
+    meta = f"生成日期：{datetime.date.today()} · 内部参考简报"
+    return (
+        f"<div class='report-shell'>"
+        f"<div class='report-head'><div class='report-kicker'>SIGNAL STUDIO · EXECUTIVE BRIEF</div>"
+        f"<div class='report-title'>{escape(title)}</div><div class='report-meta'>{meta}</div></div>"
+        f"{summary_html}"
+        f"<div class='report-body'>{''.join(body_sections)}</div>"
+        f"<div class='report-footer'>EVIDENCE-BASED · CONCISE · ACTIONABLE</div>"
+        f"</div>"
+    )
+
+
+def build_download_html(text_content: str, title: str) -> str:
+    body = build_report_body_html(text_content, title)
+    return f"""
+    <html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{escape(title)}</title>
+        <style>
+            body {{
+                margin: 0;
+                padding: 28px;
+                background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+                font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            }}
+            .report-shell {{ background: rgba(255,255,255,0.96); border: 1px solid rgba(93,120,255,0.10); border-radius: 24px; box-shadow: 0 30px 80px rgba(22,32,51,0.10); overflow: hidden; max-width: 1080px; margin: 0 auto; }}
+            .report-head {{ padding: 28px 30px 22px; border-bottom: 1px solid rgba(93,120,255,0.10); background: linear-gradient(180deg, rgba(245,248,255,0.95) 0%, rgba(255,255,255,0.92) 100%); }}
+            .report-kicker {{ font-size: 11px; text-transform: uppercase; letter-spacing: 0.22em; color: #5d78ff; font-weight: 800; margin-bottom: 10px; }}
+            .report-title {{ font-size: 32px; line-height: 1.15; font-weight: 760; color: #162033; margin: 0 0 8px; }}
+            .report-meta {{ color: #7a879b; font-size: 12px; }}
+            .summary-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; padding: 18px 30px 8px; }}
+            .summary-card {{ padding: 16px 16px 14px; background: linear-gradient(180deg, #f7faff 0%, #ffffff 100%); border: 1px solid rgba(93,120,255,0.10); border-radius: 18px; }}
+            .summary-card .num {{ font-size: 11px; color: #5d78ff; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; }}
+            .summary-card p {{ margin: 0; font-size: 14px; line-height: 1.7; color: #162033; }}
+            .report-body {{ padding: 8px 30px 30px; }}
+            .report-section {{ margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(93,120,255,0.08); }}
+            .report-section h2 {{ margin: 0 0 12px; font-size: 20px; line-height: 1.35; color: #23366f; font-weight: 760; }}
+            .report-section p {{ margin: 8px 0; line-height: 1.8; font-size: 14px; color: #22314f; }}
+            .report-list {{ margin: 0; padding-left: 1.25rem; }}
+            .report-list li {{ margin: 8px 0; line-height: 1.76; color: #22314f; font-size: 14px; }}
+            .report-quote {{ background: #fbf8f3; border: 1px solid rgba(184,135,88,0.16); border-left: 3px solid #b88758; border-radius: 14px; padding: 12px 14px; margin: 10px 0; color: #32405c; font-size: 14px; line-height: 1.76; }}
+            .table-wrap {{ overflow-x: auto; border: 1px solid rgba(93,120,255,0.10); border-radius: 18px; margin-top: 12px; }}
+            .report-table {{ width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; }}
+            .report-table th, .report-table td {{ padding: 12px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid rgba(93,120,255,0.08); border-right: 1px solid rgba(93,120,255,0.06); line-height: 1.72; color: #22314f; }}
+            .report-table th {{ background: #eff4ff; color: #162033; font-weight: 760; }}
+            .report-table tr:last-child td {{ border-bottom: none; }}
+            .report-table th:last-child, .report-table td:last-child {{ border-right: none; }}
+            .report-footer {{ padding: 18px 30px 24px; font-size: 11px; color: #7a879b; border-top: 1px solid rgba(93,120,255,0.08); letter-spacing: 0.08em; }}
+        </style>
+    </head>
+    <body>
+        {body}
+    </body>
+    </html>
+    """
+
+
+def generate_html_report(text_content: str, title: str):
+    html_doc = build_download_html(text_content, title)
+    b64 = base64.b64encode(html_doc.encode("utf-8")).decode()
     filename = sanitize_filename(title)
-    return f'<a class="download-link" href="data:text/html;base64,{b64}" download="{filename}.html">导出报告 · HTML/PDF</a>'
+    return f'<a class="download-link" href="data:text/html;base64,{b64}" download="{filename}.html">导出精美简报 · HTML/PDF</a>'
+
+
+def render_report_preview(report_text: str, title: str):
+    st.markdown(build_report_body_html(report_text, title), unsafe_allow_html=True)
+    action_cols = st.columns([1.3, 1, 1.2])
+    with action_cols[0]:
+        st.markdown(generate_html_report(report_text, title), unsafe_allow_html=True)
+    with action_cols[1]:
+        st.download_button(
+            "下载 Markdown",
+            data=report_text.encode("utf-8"),
+            file_name=sanitize_filename(title) + ".md",
+            mime="text/markdown",
+            use_container_width=True,
+        )
+    with action_cols[2]:
+        st.caption("导出的 HTML 可直接发给老板，浏览器打开后也方便另存为 PDF。")
+
+    with st.expander("查看原始 Markdown 报告", expanded=False):
+        st.code(report_text, language="markdown")
 
 
 # =========================
@@ -815,12 +1091,9 @@ if mode == "单品深度研判":
                 with st.spinner("正在基于真实语料生成研判报告..."):
                     prompt = build_single_prompt(product_name.strip(), product_type, focus, user_input.strip())
                     report = analyze_with_llm(prompt, api_key, model_name, api_base)
-                    title = f"{product_name.strip()}_单品深度研判报告"
+                    title = f"{product_name.strip()}_单品研判简报"
                     st.markdown("### 报告预览")
-                    st.markdown("<div class='report-preview'>", unsafe_allow_html=True)
-                    st.markdown(report)
-                    st.markdown(generate_html_report(report, title), unsafe_allow_html=True)
-                    st.markdown("</div>", unsafe_allow_html=True)
+                    render_report_preview(report, title)
 
 else:
     with st.container(border=True):
@@ -851,9 +1124,6 @@ else:
                 with st.spinner("正在构建竞品攻防研判报告..."):
                     prompt = build_compare_prompt(main_product.strip(), competitor_product.strip(), product_type, focus, main_input.strip(), competitor_input.strip())
                     report = analyze_with_llm(prompt, api_key, model_name, api_base)
-                    title = f"{main_product.strip()}_vs_{competitor_product.strip()}_竞品攻防研判报告"
+                    title = f"{main_product.strip()}_vs_{competitor_product.strip()}_竞品攻防简报"
                     st.markdown("### 报告预览")
-                    st.markdown("<div class='report-preview'>", unsafe_allow_html=True)
-                    st.markdown(report)
-                    st.markdown(generate_html_report(report, title), unsafe_allow_html=True)
-                    st.markdown("</div>", unsafe_allow_html=True)
+                    render_report_preview(report, title)
