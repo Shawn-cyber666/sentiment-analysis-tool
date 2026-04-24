@@ -11,199 +11,270 @@ from html import escape
 # 1. Page config
 # =========================
 st.set_page_config(
-    page_title="Maison Insight｜产品研判平台",
-    page_icon="◆",
+    page_title="Signal Studio｜产品研判平台",
+    page_icon="◌",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",  # 默认收起，左上角可展开
 )
 
 
 # =========================
-# 2. Luxury-style UI CSS
+# 2. Tech-luxury UI CSS
+#    vibe: vivo official site × Hermès editorial warmth
 # =========================
-def inject_luxury_css():
+def inject_ui_css():
     st.markdown(
         """
         <style>
         :root {
-            --lux-black: #0B0A08;
-            --lux-ink: #17120D;
-            --lux-coffee: #3B2F24;
-            --lux-gold: #B99A5B;
-            --lux-gold-soft: #D8C49A;
-            --lux-cream: #F7F1E7;
-            --lux-porcelain: #FBF8F1;
-            --lux-mist: #EFE7DA;
-            --lux-muted: #8C806E;
-            --lux-line: rgba(185, 154, 91, 0.28);
+            --bg: #f5f7fb;
+            --bg-soft: #eef2f8;
+            --ink: #0f1728;
+            --ink-soft: #5b6578;
+            --panel: rgba(255,255,255,0.72);
+            --panel-strong: rgba(255,255,255,0.86);
+            --line: rgba(90, 118, 255, 0.16);
+            --line-strong: rgba(90, 118, 255, 0.32);
+            --blue: #5f79ff;
+            --blue-deep: #1d2e66;
+            --blue-soft: #dbe4ff;
+            --warm: #bb8455;
+            --warm-soft: #f3eadf;
+            --shadow: 0 24px 70px rgba(17, 28, 55, 0.10);
+            --radius: 22px;
         }
 
         .stApp {
             background:
-                radial-gradient(circle at top left, rgba(185,154,91,0.16), transparent 30%),
-                linear-gradient(135deg, #0B0A08 0%, #17120D 36%, #F7F1E7 36%, #FBF8F1 100%);
-            color: var(--lux-ink);
+                radial-gradient(circle at 14% 10%, rgba(95,121,255,0.11), transparent 24%),
+                radial-gradient(circle at 88% 8%, rgba(187,132,85,0.10), transparent 22%),
+                linear-gradient(180deg, #f7f9fc 0%, #eef3f9 100%);
+            color: var(--ink);
         }
 
-        /* Main content width */
         .block-container {
-            padding-top: 2.2rem;
+            max-width: 1320px;
+            padding-top: 1.5rem;
             padding-bottom: 4rem;
-            max-width: 1280px;
         }
 
-        /* Sidebar */
+        /* top header area */
+        header[data-testid="stHeader"] {
+            background: rgba(247,249,252,0.72);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(90,118,255,0.08);
+        }
+
+        /* make collapsed control more visible */
+        button[kind="header"] {
+            border-radius: 999px !important;
+            border: 1px solid rgba(90,118,255,0.16) !important;
+            background: rgba(255,255,255,0.76) !important;
+            box-shadow: 0 8px 24px rgba(17, 28, 55, 0.08) !important;
+        }
+
+        /* sidebar */
         section[data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #080706 0%, #17120D 100%);
-            border-right: 1px solid rgba(185,154,91,0.28);
+            background:
+                linear-gradient(180deg, rgba(13,20,35,0.98) 0%, rgba(17,29,57,0.98) 100%);
+            border-right: 1px solid rgba(95,121,255,0.18);
+        }
+        section[data-testid="stSidebar"]::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at top left, rgba(95,121,255,0.18), transparent 24%),
+                radial-gradient(circle at bottom right, rgba(187,132,85,0.12), transparent 22%);
+            pointer-events: none;
         }
         section[data-testid="stSidebar"] * {
-            color: #F7F1E7 !important;
+            color: #eef3ff !important;
         }
         section[data-testid="stSidebar"] label,
-        section[data-testid="stSidebar"] .stCaption,
-        section[data-testid="stSidebar"] p {
-            color: rgba(247,241,231,0.72) !important;
+        section[data-testid="stSidebar"] p,
+        section[data-testid="stSidebar"] .stCaption {
+            color: rgba(238,243,255,0.72) !important;
+        }
+        section[data-testid="stSidebar"] hr {
+            border-color: rgba(95,121,255,0.16) !important;
         }
         section[data-testid="stSidebar"] input,
         section[data-testid="stSidebar"] textarea,
-        section[data-testid="stSidebar"] div[data-baseweb="select"] > div,
-        section[data-testid="stSidebar"] div[data-baseweb="tag"] {
+        section[data-testid="stSidebar"] [data-baseweb="select"] > div,
+        section[data-testid="stSidebar"] [data-baseweb="tag"] {
             background: rgba(255,255,255,0.07) !important;
-            border: 1px solid rgba(185,154,91,0.35) !important;
-            border-radius: 2px !important;
-            color: #F7F1E7 !important;
-        }
-        section[data-testid="stSidebar"] hr {
-            border-color: rgba(185,154,91,0.25);
+            border: 1px solid rgba(95,121,255,0.20) !important;
+            border-radius: 14px !important;
+            color: #eef3ff !important;
+            box-shadow: none !important;
         }
 
-        /* Typography */
-        h1, h2, h3 {
+        /* typography */
+        h1, h2, h3, h4 {
             letter-spacing: -0.03em;
         }
-        .lux-hero {
-            padding: 52px 56px 48px;
-            border-radius: 0px;
-            background:
-                linear-gradient(120deg, rgba(11,10,8,0.96) 0%, rgba(23,18,13,0.93) 56%, rgba(59,47,36,0.84) 100%),
-                radial-gradient(circle at 78% 18%, rgba(217,196,154,0.25), transparent 28%);
-            border: 1px solid rgba(185,154,91,0.36);
-            box-shadow: 0 30px 80px rgba(0,0,0,0.22);
+
+        .hero-shell {
             position: relative;
             overflow: hidden;
-            margin-bottom: 26px;
+            padding: 42px 44px 40px;
+            border-radius: 28px;
+            border: 1px solid rgba(95,121,255,0.14);
+            background:
+                linear-gradient(135deg, rgba(12,19,34,0.96) 0%, rgba(24,36,73,0.96) 60%, rgba(25,40,82,0.92) 100%);
+            box-shadow: 0 36px 90px rgba(13,20,35,0.22);
+            margin-bottom: 22px;
         }
-        .lux-hero:after {
+        .hero-shell::before {
             content: "";
             position: absolute;
-            right: -120px;
-            top: -160px;
-            width: 420px;
-            height: 420px;
-            border: 1px solid rgba(216,196,154,0.18);
-            transform: rotate(35deg);
+            inset: 0;
+            background:
+                radial-gradient(circle at 84% 18%, rgba(95,121,255,0.24), transparent 20%),
+                radial-gradient(circle at 72% 80%, rgba(187,132,85,0.14), transparent 18%);
+            pointer-events: none;
         }
-        .lux-eyebrow {
+        .hero-shell::after {
+            content: "";
+            position: absolute;
+            right: -60px;
+            top: -40px;
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.07);
+            box-shadow:
+                inset 0 0 0 22px rgba(255,255,255,0.02),
+                inset 0 0 0 64px rgba(255,255,255,0.015);
+            opacity: 0.9;
+        }
+        .hero-topline {
             font-size: 12px;
-            letter-spacing: 0.32em;
+            letter-spacing: 0.28em;
             text-transform: uppercase;
-            color: var(--lux-gold-soft);
-            margin-bottom: 18px;
+            color: rgba(239,244,255,0.70);
+            margin-bottom: 16px;
         }
-        .lux-title {
-            font-family: Georgia, 'Times New Roman', 'Songti SC', serif;
-            font-size: clamp(48px, 6.5vw, 88px);
-            line-height: 0.92;
-            color: #F7F1E7;
-            font-weight: 400;
-            margin: 0 0 18px 0;
+        .hero-title {
+            margin: 0;
+            font-size: clamp(38px, 5.9vw, 78px);
+            line-height: 0.94;
+            color: #ffffff;
+            font-weight: 650;
         }
-        .lux-title span {
-            color: var(--lux-gold-soft);
-            font-style: italic;
+        .hero-title span {
+            color: #d5defe;
+            font-weight: 420;
         }
-        .lux-subtitle {
+        .hero-desc {
+            margin-top: 18px;
             max-width: 760px;
-            color: rgba(247,241,231,0.76);
-            font-size: 17px;
-            line-height: 1.8;
-            margin-bottom: 28px;
+            color: rgba(238,243,255,0.76);
+            font-size: 15px;
+            line-height: 1.85;
         }
-        .lux-meta-row {
+        .hero-meta {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
+            margin-top: 22px;
         }
-        .lux-pill {
+        .hero-chip {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 13px;
-            border: 1px solid rgba(216,196,154,0.28);
-            color: rgba(247,241,231,0.78);
-            background: rgba(255,255,255,0.045);
+            padding: 9px 13px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.10);
+            color: rgba(238,243,255,0.82);
             font-size: 12px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
+        }
+        .hero-note {
+            margin-top: 16px;
+            color: rgba(238,243,255,0.55);
+            font-size: 12px;
         }
 
-        .lux-panel {
-            background: rgba(251,248,241,0.92);
-            border: 1px solid rgba(185,154,91,0.28);
-            box-shadow: 0 18px 45px rgba(34,24,12,0.08);
-            padding: 28px;
-            margin: 16px 0 22px;
-        }
-        .lux-panel.dark {
-            background: linear-gradient(135deg, #11100E 0%, #241B12 100%);
-            color: #F7F1E7;
-        }
-        .lux-section-kicker {
-            color: var(--lux-gold);
-            font-size: 12px;
-            letter-spacing: 0.26em;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        .lux-section-title {
-            font-family: Georgia, 'Times New Roman', 'Songti SC', serif;
-            font-size: 30px;
-            font-weight: 400;
-            color: var(--lux-ink);
-            margin-bottom: 8px;
-        }
-        .lux-section-desc {
-            color: var(--lux-muted);
-            line-height: 1.75;
-            font-size: 14px;
-            margin-bottom: 12px;
-        }
-        .dark .lux-section-title { color: #F7F1E7; }
-        .dark .lux-section-desc { color: rgba(247,241,231,0.68); }
-
-        .lux-stat-grid {
+        .step-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 14px;
-            margin: 18px 0 8px;
+            margin: 0 0 18px 0;
         }
-        .lux-stat {
-            padding: 18px 18px 16px;
-            border: 1px solid rgba(185,154,91,0.25);
-            background: rgba(255,255,255,0.52);
+        .step-card {
+            border-radius: 20px;
+            background: rgba(255,255,255,0.72);
+            border: 1px solid rgba(95,121,255,0.10);
+            box-shadow: var(--shadow);
+            padding: 18px 18px 17px;
+            backdrop-filter: blur(14px);
         }
-        .lux-stat-num {
-            font-family: Georgia, 'Times New Roman', serif;
-            font-size: 28px;
-            color: var(--lux-coffee);
-            margin-bottom: 4px;
-        }
-        .lux-stat-text {
-            color: var(--lux-muted);
+        .step-num {
             font-size: 12px;
-            letter-spacing: 0.12em;
+            letter-spacing: 0.22em;
+            color: var(--blue);
             text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .step-title {
+            font-size: 18px;
+            color: var(--ink);
+            font-weight: 650;
+            margin-bottom: 5px;
+        }
+        .step-desc {
+            font-size: 13px;
+            color: var(--ink-soft);
+            line-height: 1.7;
+        }
+
+        .panel {
+            background: rgba(255,255,255,0.76);
+            border: 1px solid rgba(95,121,255,0.10);
+            border-radius: 24px;
+            padding: 24px 24px 20px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(14px);
+            margin: 16px 0 20px;
+        }
+        .panel.dark {
+            background: linear-gradient(135deg, rgba(16,24,42,0.92) 0%, rgba(27,41,79,0.94) 100%);
+            border: 1px solid rgba(95,121,255,0.16);
+            color: #eef3ff;
+        }
+        .panel-kicker {
+            font-size: 12px;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: var(--blue);
+            margin-bottom: 7px;
+            font-weight: 700;
+        }
+        .dark .panel-kicker { color: #b8c6ff; }
+        .panel-title {
+            font-size: 30px;
+            color: var(--ink);
+            font-weight: 650;
+            margin-bottom: 8px;
+        }
+        .dark .panel-title { color: #ffffff; }
+        .panel-desc {
+            color: var(--ink-soft);
+            line-height: 1.8;
+            font-size: 14px;
+        }
+        .dark .panel-desc { color: rgba(238,243,255,0.72); }
+
+        .section-caption {
+            font-size: 12px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--blue);
+            margin: 8px 0 10px;
+            font-weight: 700;
         }
 
         .source-grid {
@@ -211,104 +282,148 @@ def inject_luxury_css():
             grid-template-columns: repeat(5, minmax(0, 1fr));
             gap: 12px;
             margin-top: 12px;
+            margin-bottom: 8px;
         }
         .source-card {
             display: block;
-            min-height: 104px;
-            padding: 18px 15px;
+            position: relative;
+            min-height: 114px;
             text-decoration: none !important;
-            border: 1px solid rgba(185,154,91,0.25);
-            background: linear-gradient(180deg, rgba(255,255,255,0.70), rgba(247,241,231,0.76));
-            color: var(--lux-ink) !important;
+            padding: 16px 16px 15px;
+            border-radius: 18px;
+            border: 1px solid rgba(95,121,255,0.12);
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.88) 0%, rgba(245,248,252,0.78) 100%);
+            box-shadow: 0 18px 42px rgba(17, 28, 55, 0.07);
             transition: all .18s ease;
+            overflow: hidden;
+        }
+        .source-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--blue) 0%, var(--warm) 100%);
+            opacity: 0.8;
         }
         .source-card:hover {
             transform: translateY(-3px);
-            border-color: rgba(185,154,91,0.68);
-            box-shadow: 0 16px 32px rgba(59,47,36,0.10);
+            border-color: rgba(95,121,255,0.28);
+            box-shadow: 0 24px 50px rgba(17, 28, 55, 0.11);
         }
         .source-index {
-            font-family: Georgia, 'Times New Roman', serif;
-            color: var(--lux-gold);
-            font-size: 19px;
-            margin-bottom: 14px;
+            color: var(--warm);
+            font-size: 12px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            font-weight: 700;
         }
         .source-name {
+            color: var(--ink);
             font-size: 14px;
-            line-height: 1.35;
-            font-weight: 600;
-            color: var(--lux-ink);
+            line-height: 1.45;
+            font-weight: 650;
         }
         .source-note {
             margin-top: 8px;
+            color: var(--ink-soft);
             font-size: 11px;
-            color: var(--lux-muted);
-            letter-spacing: 0.04em;
+            letter-spacing: 0.08em;
         }
 
-        .stTextInput input, .stTextArea textarea {
-            border-radius: 0 !important;
-            border: 1px solid rgba(59,47,36,0.22) !important;
+        .stTextInput label, .stTextArea label, .stSelectbox label, .stMultiSelect label, .stRadio label {
+            color: var(--ink) !important;
+            font-weight: 600;
+        }
+
+        .stTextInput input,
+        .stTextArea textarea,
+        [data-baseweb="select"] > div,
+        [data-baseweb="base-input"] {
             background: rgba(255,255,255,0.78) !important;
-            color: var(--lux-ink) !important;
+            border: 1px solid rgba(95,121,255,0.12) !important;
+            border-radius: 16px !important;
+            color: var(--ink) !important;
             box-shadow: none !important;
         }
-        .stTextInput input:focus, .stTextArea textarea:focus {
-            border-color: rgba(185,154,91,0.88) !important;
-            box-shadow: 0 0 0 1px rgba(185,154,91,0.25) !important;
+        .stTextInput input:focus,
+        .stTextArea textarea:focus {
+            border-color: rgba(95,121,255,0.38) !important;
+            box-shadow: 0 0 0 4px rgba(95,121,255,0.08) !important;
         }
 
         .stButton > button, .stDownloadButton > button {
-            border-radius: 0 !important;
-            border: 1px solid rgba(185,154,91,0.72) !important;
-            background: linear-gradient(135deg, #11100E 0%, #3B2F24 100%) !important;
-            color: #F7F1E7 !important;
             min-height: 48px;
-            letter-spacing: 0.12em;
+            border-radius: 999px !important;
+            border: 1px solid rgba(95,121,255,0.18) !important;
+            background:
+                linear-gradient(135deg, rgba(20,31,59,0.98) 0%, rgba(40,59,118,0.98) 100%) !important;
+            color: #ffffff !important;
             font-size: 13px;
-            text-transform: uppercase;
-            box-shadow: 0 12px 28px rgba(11,10,8,0.18);
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            box-shadow: 0 18px 38px rgba(26, 41, 82, 0.16);
             transition: all .18s ease;
         }
         .stButton > button:hover, .stDownloadButton > button:hover {
             transform: translateY(-1px);
-            border-color: #D8C49A !important;
-            box-shadow: 0 18px 36px rgba(11,10,8,0.25);
+            box-shadow: 0 24px 44px rgba(26,41,82,0.22);
+            border-color: rgba(95,121,255,0.28) !important;
         }
 
         div[data-testid="stAlert"] {
-            border-radius: 0;
-            border: 1px solid rgba(185,154,91,0.28);
-            background: rgba(251,248,241,0.82);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid rgba(95,121,255,0.10);
+            border-radius: 18px;
         }
         div[data-testid="stExpander"] {
-            border-radius: 0 !important;
-            border: 1px solid rgba(185,154,91,0.28) !important;
-            background: rgba(251,248,241,0.86) !important;
+            background: rgba(255,255,255,0.70) !important;
+            border: 1px solid rgba(95,121,255,0.10) !important;
+            border-radius: 18px !important;
         }
 
         .report-preview {
-            padding: 28px;
-            border: 1px solid rgba(185,154,91,0.3);
-            background: rgba(251,248,241,0.94);
-            box-shadow: 0 18px 45px rgba(34,24,12,0.08);
-        }
-        .download-link {
-            text-decoration: none !important;
-            background: linear-gradient(135deg, #11100E 0%, #3B2F24 100%);
-            color: #F7F1E7 !important;
-            padding: 13px 24px;
-            border: 1px solid rgba(216,196,154,0.72);
-            display: inline-block;
-            letter-spacing: 0.10em;
-            font-size: 13px;
-            margin-top: 12px;
+            background: rgba(255,255,255,0.76);
+            border: 1px solid rgba(95,121,255,0.10);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(14px);
         }
 
-        @media (max-width: 900px) {
-            .lux-hero { padding: 36px 28px; }
-            .source-grid, .lux-stat-grid { grid-template-columns: 1fr; }
-            .lux-title { font-size: 46px; }
+        .download-link {
+            display: inline-block;
+            text-decoration: none !important;
+            padding: 12px 18px;
+            margin-top: 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(95,121,255,0.18);
+            background: linear-gradient(135deg, rgba(20,31,59,0.98) 0%, rgba(40,59,118,0.98) 100%);
+            color: #ffffff !important;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+        }
+
+        .micro-tip {
+            margin-top: 8px;
+            color: var(--ink-soft);
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 1100px) {
+            .source-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .step-grid { grid-template-columns: 1fr; }
+            .hero-shell { padding: 32px 24px 30px; }
+        }
+        @media (max-width: 760px) {
+            .source-grid { grid-template-columns: 1fr; }
+            .hero-title { font-size: 42px; }
+            .panel-title { font-size: 24px; }
         }
         </style>
         """,
@@ -316,7 +431,7 @@ def inject_luxury_css():
     )
 
 
-inject_luxury_css()
+inject_ui_css()
 
 
 # =========================
@@ -340,9 +455,9 @@ def render_link_grid(links: dict[str, str]):
         cards.append(
             f"""
             <a class="source-card" href="{escape(url)}" target="_blank" rel="noopener noreferrer">
-                <div class="source-index">{idx:02d}</div>
+                <div class="source-index">GATE {idx:02d}</div>
                 <div class="source-name">{escape(name)}</div>
-                <div class="source-note">OPEN SOURCE GATEWAY</div>
+                <div class="source-note">OPEN SEARCH CHANNEL</div>
             </a>
             """
         )
@@ -356,7 +471,7 @@ def sanitize_filename(name: str) -> str:
 
 def is_ready_to_analyze(api_key: str, *texts: str) -> bool:
     if not api_key.strip():
-        st.warning("请先在左侧输入 API Key。")
+        st.warning("请先在侧边配置栏输入 API Key。")
         return False
     if any(not text.strip() for text in texts):
         st.warning("请先填写产品名，并粘贴真实语料。")
@@ -364,35 +479,65 @@ def is_ready_to_analyze(api_key: str, *texts: str) -> bool:
     return True
 
 
+# =========================
+# 4. Header / panels
+# =========================
 def render_hero():
     st.markdown(
         """
-        <section class="lux-hero">
-            <div class="lux-eyebrow">MAISON INSIGHT · PRODUCT INTELLIGENCE</div>
-            <h1 class="lux-title">Product<br><span>Intelligence</span> Atelier</h1>
-            <div class="lux-subtitle">
-                输入产品名，建立 UGC 取证链路；粘贴真实语料，输出单品研判与竞品攻防报告。
-                保留工具效率，但视觉上更像一个高端品牌官网的策略工作台。
+        <section class="hero-shell">
+            <div class="hero-topline">SIGNAL STUDIO · PRODUCT INTELLIGENCE</div>
+            <h1 class="hero-title">Strategy<br><span>Signal Deck</span></h1>
+            <div class="hero-desc">
+                以更克制的科技风呈现产品研判：保留 vivo 官网那种轻盈、理性、未来感，
+                再混合一点 Hermès 官网页面里的高级留白与材质感。你输入产品名，系统自动生成取证入口；
+                你粘贴真实语料，系统生成单品洞察与竞品攻防简报。
             </div>
-            <div class="lux-meta-row">
-                <span class="lux-pill">◆ Evidence-based</span>
-                <span class="lux-pill">◆ No hallucination</span>
-                <span class="lux-pill">◆ Strategy-ready</span>
+            <div class="hero-meta">
+                <span class="hero-chip">Evidence-based</span>
+                <span class="hero-chip">Low-noise UI</span>
+                <span class="hero-chip">Strategy-ready</span>
             </div>
+            <div class="hero-note">左上角可展开 / 收起配置侧边栏</div>
         </section>
         """,
         unsafe_allow_html=True,
     )
 
 
-def render_lux_panel(kicker: str, title: str, desc: str, dark: bool = False):
-    klass = "lux-panel dark" if dark else "lux-panel"
+def render_steps():
+    st.markdown(
+        """
+        <div class="step-grid">
+            <div class="step-card">
+                <div class="step-num">Step 01</div>
+                <div class="step-title">Search Product</div>
+                <div class="step-desc">输入产品名，自动生成小红书、微博、抖音、B站、百度取证入口。</div>
+            </div>
+            <div class="step-card">
+                <div class="step-num">Step 02</div>
+                <div class="step-title">Collect Evidence</div>
+                <div class="step-desc">把真实 UGC、测评摘录、客服反馈、社媒评论贴回页面中。</div>
+            </div>
+            <div class="step-card">
+                <div class="step-num">Step 03</div>
+                <div class="step-title">Generate Brief</div>
+                <div class="step-desc">生成结构化策略简报，用于产品、市场、PMM、内容团队快速复盘。</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_panel(kicker: str, title: str, desc: str, dark: bool = False):
+    klass = "panel dark" if dark else "panel"
     st.markdown(
         f"""
         <div class="{klass}">
-            <div class="lux-section-kicker">{escape(kicker)}</div>
-            <div class="lux-section-title">{escape(title)}</div>
-            <div class="lux-section-desc">{escape(desc)}</div>
+            <div class="panel-kicker">{escape(kicker)}</div>
+            <div class="panel-title">{escape(title)}</div>
+            <div class="panel-desc">{escape(desc)}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -400,7 +545,7 @@ def render_lux_panel(kicker: str, title: str, desc: str, dark: bool = False):
 
 
 # =========================
-# 4. LLM engine
+# 5. LLM engine
 # =========================
 def analyze_with_llm(prompt: str, api_key: str, model_name: str, api_base: str):
     url = api_base.rstrip("/") + "/chat/completions"
@@ -435,7 +580,7 @@ def analyze_with_llm(prompt: str, api_key: str, model_name: str, api_base: str):
 
 
 # =========================
-# 5. Prompt templates
+# 6. Prompt templates
 # =========================
 def build_single_prompt(product_name: str, product_type: str, focus: list[str], corpus: str) -> str:
     focus_text = "、".join(focus) if focus else "用户体验、核心卖点、负面反馈、购买阻力、传播机会"
@@ -527,88 +672,90 @@ def build_compare_prompt(
 
 
 # =========================
-# 6. Luxury report export
+# 7. Report export
 # =========================
 def generate_html_report(text_content: str, title: str):
     html_template = """
     <html><head><meta charset="utf-8"><style>
     body {
         font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-        background: #0B0A08;
-        padding: 42px;
-        color: #17120D;
+        background: linear-gradient(180deg, #f6f8fc 0%, #eef3f9 100%);
+        padding: 40px;
+        color: #0f1728;
     }
     .report-card {
         max-width: 960px;
         margin: 0 auto;
-        background: #FBF8F1;
+        background: rgba(255,255,255,0.92);
+        backdrop-filter: blur(10px);
         padding: 54px;
-        border: 1px solid rgba(185,154,91,0.45);
-        box-shadow: 0 30px 80px rgba(0,0,0,0.30);
+        border-radius: 24px;
+        border: 1px solid rgba(95,121,255,0.12);
+        box-shadow: 0 30px 80px rgba(17, 28, 55, 0.12);
     }
     .eyebrow {
         text-align: center;
-        color: #B99A5B;
+        color: #5f79ff;
         font-size: 11px;
         letter-spacing: 0.28em;
         text-transform: uppercase;
-        margin-bottom: 18px;
+        margin-bottom: 16px;
+        font-weight: 700;
     }
     h1 {
         text-align: center;
-        font-family: Georgia, 'Times New Roman', 'Songti SC', serif;
-        font-weight: 400;
+        font-weight: 650;
         font-size: 34px;
-        color: #17120D;
+        color: #0f1728;
         margin: 0 0 10px 0;
         letter-spacing: -0.03em;
     }
     .meta {
         text-align: center;
-        color: #8C806E;
+        color: #697385;
         font-size: 12px;
         margin-bottom: 34px;
-        border-bottom: 1px solid rgba(185,154,91,0.30);
+        border-bottom: 1px solid rgba(95,121,255,0.12);
         padding-bottom: 22px;
     }
     h2 {
-        font-family: Georgia, 'Times New Roman', 'Songti SC', serif;
-        font-weight: 400;
-        font-size: 23px;
-        color: #3B2F24;
+        font-weight: 650;
+        font-size: 22px;
+        color: #1e2f67;
         margin: 34px 0 16px 0;
         padding-top: 18px;
-        border-top: 1px solid rgba(185,154,91,0.26);
+        border-top: 1px solid rgba(95,121,255,0.12);
     }
     .quote-box {
-        background: #F7F1E7;
-        border-left: 3px solid #B99A5B;
+        background: #f5efe9;
+        border-left: 3px solid #bb8455;
         padding: 15px 18px;
         margin: 14px 0;
-        color: #3B2F24;
+        color: #3a465c;
         font-size: 15px;
         line-height: 1.75;
+        border-radius: 12px;
     }
     p { line-height: 1.82; margin: 9px 0; }
     table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 13px; }
-    th, td { padding: 13px; border: 1px solid rgba(185,154,91,0.25); text-align: left; vertical-align: top; }
-    th { background: #F1E6D2; font-weight: 700; color: #17120D; }
+    th, td { padding: 13px; border: 1px solid rgba(95,121,255,0.12); text-align: left; vertical-align: top; }
+    th { background: #eff4ff; font-weight: 700; color: #0f1728; }
     .footer {
         text-align: center;
         margin-top: 46px;
         padding-top: 20px;
-        border-top: 1px solid rgba(185,154,91,0.26);
+        border-top: 1px solid rgba(95,121,255,0.12);
         font-size: 11px;
-        color: #8C806E;
+        color: #697385;
         letter-spacing: 0.08em;
     }
     </style></head><body>
     <div class="report-card">
-        <div class="eyebrow">MAISON INSIGHT · PRODUCT STRATEGY BRIEF</div>
+        <div class="eyebrow">SIGNAL STUDIO · PRODUCT STRATEGY BRIEF</div>
         <h1>{{TITLE}}</h1>
         <div class="meta">生成日期：{{DATE}} · 基于用户提供语料自动生成，仅供内部分析参考</div>
         {{BODY}}
-        <div class="footer">EVIDENCE-BASED · STRATEGY-READY · NO HALLUCINATION</div>
+        <div class="footer">EVIDENCE-BASED · STRUCTURED · STRATEGY-READY</div>
     </div></body></html>
     """
 
@@ -665,14 +812,14 @@ def generate_html_report(text_content: str, title: str):
 
 
 # =========================
-# 7. Sidebar controls
+# 8. Sidebar controls
 # =========================
 with st.sidebar:
     st.markdown(
         """
-        <div style="padding: 18px 0 10px; border-bottom: 1px solid rgba(185,154,91,0.26); margin-bottom: 18px;">
-            <div style="font-family: Georgia, serif; font-size: 28px; color: #F7F1E7; letter-spacing: -0.03em;">Maison Insight</div>
-            <div style="font-size: 11px; color: rgba(247,241,231,0.58); letter-spacing: 0.22em; margin-top: 6px;">STRATEGY ATELIER</div>
+        <div style="padding: 18px 0 14px; border-bottom: 1px solid rgba(95,121,255,0.16); margin-bottom: 18px;">
+            <div style="font-size: 28px; color: #ffffff; font-weight: 700; letter-spacing: -0.03em;">Signal Studio</div>
+            <div style="font-size: 11px; color: rgba(238,243,255,0.58); letter-spacing: 0.22em; margin-top: 6px;">PRODUCT INTELLIGENCE</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -699,45 +846,39 @@ with st.sidebar:
         ["用户痛点", "卖点感知", "价格价值感", "品牌认知", "系统/软件体验", "影像/性能", "外观设计", "渠道/服务", "传播话术"],
         default=["用户痛点", "卖点感知", "价格价值感", "传播话术"],
     )
-
-
-# =========================
-# 8. Main UI
-# =========================
-render_hero()
-
-st.markdown(
-    """
-    <div class="lux-stat-grid">
-        <div class="lux-stat"><div class="lux-stat-num">01</div><div class="lux-stat-text">Search Product</div></div>
-        <div class="lux-stat"><div class="lux-stat-num">02</div><div class="lux-stat-text">Collect UGC Evidence</div></div>
-        <div class="lux-stat"><div class="lux-stat-num">03</div><div class="lux-stat-text">Generate Strategy Brief</div></div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-
-if mode == "单品深度研判":
-    render_lux_panel(
-        "SINGLE PRODUCT STUDY",
-        "单品深度研判",
-        "适合分析某一款产品当前的真实用户反馈、主要痛点、机会卖点与下一步传播建议。",
+    st.markdown(
+        "<div class='micro-tip'>配置区默认收起。需要时点击左上角图标展开，日常使用时页面会更干净。</div>",
+        unsafe_allow_html=True,
     )
 
+
+# =========================
+# 9. Main UI
+# =========================
+render_hero()
+render_steps()
+
+if mode == "单品深度研判":
+    render_panel(
+        "SINGLE PRODUCT STUDY",
+        "单品深度研判",
+        "适合分析某一款产品当前的真实用户反馈、核心卖点感知、主要痛点、机会卖点与下一步传播建议。",
+    )
+
+    st.markdown("<div class='section-caption'>Product Input</div>", unsafe_allow_html=True)
     product_name = st.text_input(
         "产品名称",
         placeholder="例如：vivo X Fold5、OPPO Find N6、iPhone 17、小米汽车 SU7",
     )
 
     if product_name.strip():
-        st.markdown("#### 取证入口")
+        st.markdown("<div class='section-caption'>Evidence Gateways</div>", unsafe_allow_html=True)
         st.caption("点击下方入口去外部平台收集真实语料，再粘贴回本页面。")
         render_link_grid(get_search_links(product_name))
     else:
         st.info("先输入产品名称，系统会自动生成小红书、微博、抖音、B站、百度的搜索入口。")
 
-    st.markdown("#### 原始语料")
+    st.markdown("<div class='section-caption'>Raw Corpus</div>", unsafe_allow_html=True)
     user_input = st.text_area(
         "请粘贴真实评论、测评摘录、社媒反馈或客服反馈",
         height=300,
@@ -757,7 +898,7 @@ if mode == "单品深度研判":
                 st.markdown("</div>", unsafe_allow_html=True)
 
 else:
-    render_lux_panel(
+    render_panel(
         "COMPETITIVE DUEL",
         "竞品对比攻防",
         "适合把本品与竞品的 UGC 反馈放在同一张策略桌上，判断防守点、进攻点与可用传播话术。",
@@ -766,7 +907,7 @@ else:
     col1, col2 = st.columns(2, gap="large")
 
     with col1:
-        st.markdown("#### 本品")
+        st.markdown("<div class='section-caption'>Main Product</div>", unsafe_allow_html=True)
         main_product = st.text_input("本品名称", placeholder="例如：vivo X Fold5")
         if main_product.strip():
             render_link_grid(get_search_links(main_product))
@@ -777,7 +918,7 @@ else:
         )
 
     with col2:
-        st.markdown("#### 竞品")
+        st.markdown("<div class='section-caption'>Competitor</div>", unsafe_allow_html=True)
         competitor_product = st.text_input("竞品名称", placeholder="例如：OPPO Find N6 / 华为 Mate X 系列")
         if competitor_product.strip():
             render_link_grid(get_search_links(competitor_product))
