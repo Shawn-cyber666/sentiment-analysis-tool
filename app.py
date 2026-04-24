@@ -1,3 +1,4 @@
+
 import streamlit as st
 import requests
 import datetime
@@ -8,7 +9,7 @@ from html import escape
 
 
 # =========================
-# 1. Page config
+# Page config
 # =========================
 st.set_page_config(
     page_title="Signal Studio｜产品研判平台",
@@ -19,269 +20,156 @@ st.set_page_config(
 
 
 # =========================
-# 2. UI CSS: vivo-tech × Hermès restraint
+# Light, clean UI
 # =========================
-def inject_ui_css():
+def inject_css():
     st.markdown(
         """
         <style>
         :root {
-            --bg: #f5f7fb;
-            --bg-soft: #eef2f8;
-            --ink: #101827;
-            --ink-soft: #5d687a;
-            --muted: #7a8495;
-            --panel: rgba(255,255,255,0.76);
-            --panel-strong: rgba(255,255,255,0.90);
-            --line: rgba(88, 116, 255, 0.13);
-            --line-strong: rgba(88, 116, 255, 0.30);
-            --blue: #5e78ff;
-            --blue-deep: #18295d;
-            --blue-soft: #dde6ff;
-            --warm: #b78458;
-            --warm-soft: #f2e9df;
-            --green: #39a78e;
-            --shadow: 0 24px 70px rgba(17, 28, 55, 0.10);
-            --radius: 24px;
+            --bg: #f8fbff;
+            --ink: #162033;
+            --muted: #66748a;
+            --blue: #5d78ff;
+            --blue-deep: #23366f;
+            --blue-soft: #edf2ff;
+            --warm: #b88758;
+            --line: rgba(93,120,255,0.14);
+            --panel: rgba(255,255,255,0.86);
+            --shadow: 0 22px 58px rgba(22, 32, 51, 0.08);
         }
 
         .stApp {
             background:
-                radial-gradient(circle at 12% 8%, rgba(94,120,255,0.11), transparent 24%),
-                radial-gradient(circle at 92% 6%, rgba(183,132,88,0.10), transparent 22%),
-                linear-gradient(180deg, #f7f9fc 0%, #eef3f9 100%);
+                radial-gradient(circle at 12% 8%, rgba(93,120,255,0.10), transparent 24%),
+                radial-gradient(circle at 94% 6%, rgba(184,135,88,0.08), transparent 24%),
+                linear-gradient(180deg, #fbfdff 0%, #f3f7fd 100%);
             color: var(--ink);
         }
 
         .block-container {
-            max-width: 1360px;
-            padding-top: 1.45rem;
+            max-width: 1260px;
+            padding-top: 1.4rem;
             padding-bottom: 4rem;
         }
 
         header[data-testid="stHeader"] {
-            background: rgba(247,249,252,0.76);
+            background: rgba(251,253,255,0.88);
             backdrop-filter: blur(14px);
-            border-bottom: 1px solid rgba(88,116,255,0.08);
-        }
-
-        button[kind="header"] {
-            border-radius: 999px !important;
-            border: 1px solid rgba(88,116,255,0.16) !important;
-            background: rgba(255,255,255,0.80) !important;
-            box-shadow: 0 8px 24px rgba(17, 28, 55, 0.08) !important;
+            border-bottom: 1px solid rgba(93,120,255,0.06);
         }
 
         section[data-testid="stSidebar"] {
-            background: linear-gradient(180deg, rgba(13,20,35,0.98) 0%, rgba(18,31,62,0.98) 100%);
-            border-right: 1px solid rgba(94,120,255,0.18);
+            background: linear-gradient(180deg, rgba(248,251,255,0.98) 0%, rgba(238,244,255,0.98) 100%);
+            border-right: 1px solid rgba(93,120,255,0.12);
         }
-        section[data-testid="stSidebar"]::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background:
-                radial-gradient(circle at top left, rgba(94,120,255,0.18), transparent 24%),
-                radial-gradient(circle at bottom right, rgba(183,132,88,0.12), transparent 22%);
-            pointer-events: none;
-        }
-        section[data-testid="stSidebar"] * { color: #eef3ff !important; }
+        section[data-testid="stSidebar"] * { color: var(--ink) !important; }
         section[data-testid="stSidebar"] label,
         section[data-testid="stSidebar"] p,
-        section[data-testid="stSidebar"] .stCaption { color: rgba(238,243,255,0.72) !important; }
-        section[data-testid="stSidebar"] hr { border-color: rgba(94,120,255,0.16) !important; }
+        section[data-testid="stSidebar"] .stCaption {
+            color: var(--muted) !important;
+        }
         section[data-testid="stSidebar"] input,
         section[data-testid="stSidebar"] textarea,
         section[data-testid="stSidebar"] [data-baseweb="select"] > div,
-        section[data-testid="stSidebar"] [data-baseweb="tag"] {
-            background: rgba(255,255,255,0.07) !important;
-            border: 1px solid rgba(94,120,255,0.20) !important;
-            border-radius: 14px !important;
-            color: #eef3ff !important;
+        section[data-testid="stSidebar"] [data-baseweb="base-input"] {
+            background: rgba(255,255,255,0.96) !important;
+            border: 1px solid rgba(93,120,255,0.16) !important;
+            border-radius: 16px !important;
+            color: var(--ink) !important;
             box-shadow: none !important;
+        }
+        input::placeholder, textarea::placeholder {
+            color: #95a1b5 !important;
+            opacity: 1 !important;
         }
 
         h1, h2, h3, h4 { letter-spacing: -0.03em; }
 
-        .hero-shell {
-            position: relative;
-            overflow: hidden;
-            padding: 42px 44px 40px;
-            border-radius: 30px;
-            border: 1px solid rgba(94,120,255,0.14);
-            background: linear-gradient(135deg, rgba(12,19,34,0.97) 0%, rgba(24,36,73,0.96) 58%, rgba(26,42,84,0.92) 100%);
-            box-shadow: 0 36px 90px rgba(13,20,35,0.22);
+        .top-hero {
+            padding: 28px 30px;
+            border-radius: 28px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.94) 0%, rgba(240,246,255,0.96) 100%);
+            border: 1px solid rgba(93,120,255,0.12);
+            box-shadow: var(--shadow);
             margin-bottom: 18px;
         }
-        .hero-shell::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background:
-                radial-gradient(circle at 84% 18%, rgba(94,120,255,0.24), transparent 20%),
-                radial-gradient(circle at 72% 80%, rgba(183,132,88,0.14), transparent 18%);
-            pointer-events: none;
-        }
-        .hero-shell::after {
-            content: "";
-            position: absolute;
-            right: -60px;
-            top: -40px;
-            width: 360px;
-            height: 360px;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.07);
-            box-shadow: inset 0 0 0 22px rgba(255,255,255,0.02), inset 0 0 0 64px rgba(255,255,255,0.015);
-            opacity: 0.9;
-        }
-        .hero-content { position: relative; z-index: 2; }
-        .hero-topline {
+        .eyebrow {
             font-size: 12px;
             letter-spacing: 0.28em;
+            color: var(--blue);
+            font-weight: 800;
             text-transform: uppercase;
-            color: rgba(239,244,255,0.70);
-            margin-bottom: 16px;
+            margin-bottom: 8px;
         }
         .hero-title {
-            margin: 0;
-            font-size: clamp(38px, 5.7vw, 78px);
-            line-height: 0.94;
-            color: #ffffff;
-            font-weight: 660;
+            font-size: clamp(34px, 4.8vw, 58px);
+            line-height: 1;
+            color: var(--blue-deep);
+            font-weight: 760;
+            margin-bottom: 10px;
         }
-        .hero-title span { color: #d5defe; font-weight: 430; }
+        .hero-title span { color: var(--blue); font-weight: 520; }
         .hero-desc {
-            margin-top: 18px;
-            max-width: 790px;
-            color: rgba(238,243,255,0.76);
-            font-size: 15px;
-            line-height: 1.85;
+            max-width: 760px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.78;
+            margin: 0;
         }
-        .hero-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
-        .hero-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 9px 13px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.10);
-            color: rgba(238,243,255,0.82);
-            font-size: 12px;
-        }
-        .hero-note { margin-top: 16px; color: rgba(238,243,255,0.55); font-size: 12px; }
-
-        .search-console {
-            background: rgba(255,255,255,0.78);
-            border: 1px solid rgba(94,120,255,0.12);
-            border-radius: 28px;
-            padding: 22px 22px 20px;
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(14px);
-            margin: 0 0 18px 0;
-        }
-        .console-head {
+        .mini-steps {
             display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 16px;
-            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 16px;
         }
-        .console-kicker {
-            font-size: 12px;
-            letter-spacing: 0.24em;
-            color: var(--blue);
-            text-transform: uppercase;
-            font-weight: 750;
-            margin-bottom: 6px;
-        }
-        .console-title {
-            font-size: 26px;
-            font-weight: 720;
-            color: var(--ink);
-        }
-        .console-desc { color: var(--ink-soft); line-height: 1.75; font-size: 13px; max-width: 620px; }
-        .query-chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px; }
-        .query-chip {
+        .mini-chip {
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.72);
+            border: 1px solid rgba(93,120,255,0.10);
             border-radius: 999px;
-            padding: 7px 11px;
-            background: #eef3ff;
-            border: 1px solid rgba(94,120,255,0.12);
-            color: #23366f;
+            color: var(--blue-deep);
             font-size: 12px;
             font-weight: 650;
         }
 
-        .step-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 0 0 18px 0; }
-        .step-card {
-            border-radius: 20px;
-            background: rgba(255,255,255,0.72);
-            border: 1px solid rgba(94,120,255,0.10);
-            box-shadow: var(--shadow);
-            padding: 18px 18px 17px;
-            backdrop-filter: blur(14px);
-        }
-        .step-num { font-size: 12px; letter-spacing: 0.22em; color: var(--blue); text-transform: uppercase; margin-bottom: 8px; font-weight: 750; }
-        .step-title { font-size: 18px; color: var(--ink); font-weight: 680; margin-bottom: 5px; }
-        .step-desc { font-size: 13px; color: var(--ink-soft); line-height: 1.7; }
-
-        .panel {
-            background: rgba(255,255,255,0.76);
-            border: 1px solid rgba(94,120,255,0.10);
+        .soft-card {
+            padding: 20px;
             border-radius: 24px;
-            padding: 24px 24px 20px;
+            background: var(--panel);
+            border: 1px solid rgba(93,120,255,0.10);
             box-shadow: var(--shadow);
-            backdrop-filter: blur(14px);
-            margin: 16px 0 20px;
+            margin-bottom: 18px;
         }
-        .panel-kicker { font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--blue); margin-bottom: 7px; font-weight: 750; }
-        .panel-title { font-size: 30px; color: var(--ink); font-weight: 720; margin-bottom: 8px; }
-        .panel-desc { color: var(--ink-soft); line-height: 1.8; font-size: 14px; }
-
-        .section-caption {
+        .card-title {
+            color: var(--ink);
+            font-size: 22px;
+            font-weight: 760;
+            margin-bottom: 4px;
+        }
+        .card-desc {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.72;
+            margin-bottom: 6px;
+        }
+        .section-kicker {
             font-size: 12px;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
+            letter-spacing: 0.18em;
             color: var(--blue);
-            margin: 8px 0 10px;
-            font-weight: 750;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin: 10px 0 8px;
         }
-
-        .source-grid {
-            display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 12px;
-            margin-top: 12px;
-            margin-bottom: 8px;
+        .query-preview {
+            padding: 10px 12px;
+            background: var(--blue-soft);
+            border: 1px solid rgba(93,120,255,0.12);
+            border-radius: 16px;
+            color: var(--blue-deep);
+            font-size: 13px;
+            margin: 8px 0 12px;
         }
-        .source-grid.compact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .source-card {
-            display: block;
-            position: relative;
-            min-height: 108px;
-            text-decoration: none !important;
-            padding: 16px 16px 15px;
-            border-radius: 18px;
-            border: 1px solid rgba(94,120,255,0.12);
-            background: linear-gradient(180deg, rgba(255,255,255,0.90) 0%, rgba(245,248,252,0.80) 100%);
-            box-shadow: 0 18px 42px rgba(17, 28, 55, 0.07);
-            transition: all .18s ease;
-            overflow: hidden;
-        }
-        .source-card::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, var(--blue) 0%, var(--warm) 100%);
-            opacity: 0.82;
-        }
-        .source-card:hover { transform: translateY(-3px); border-color: rgba(94,120,255,0.30); box-shadow: 0 24px 50px rgba(17, 28, 55, 0.11); }
-        .source-index { color: var(--warm); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 11px; font-weight: 750; }
-        .source-name { color: var(--ink); font-size: 14px; line-height: 1.45; font-weight: 680; }
-        .source-note { margin-top: 8px; color: var(--ink-soft); font-size: 11px; letter-spacing: 0.08em; }
 
         .stTextInput label, .stTextArea label, .stSelectbox label, .stMultiSelect label, .stRadio label {
             color: var(--ink) !important;
@@ -291,42 +179,64 @@ def inject_ui_css():
         .stTextArea textarea,
         [data-baseweb="select"] > div,
         [data-baseweb="base-input"] {
-            background: rgba(255,255,255,0.82) !important;
-            border: 1px solid rgba(94,120,255,0.12) !important;
+            background: rgba(255,255,255,0.90) !important;
+            border: 1px solid rgba(93,120,255,0.12) !important;
             border-radius: 16px !important;
             color: var(--ink) !important;
             box-shadow: none !important;
         }
         .stTextInput input:focus, .stTextArea textarea:focus {
-            border-color: rgba(94,120,255,0.38) !important;
-            box-shadow: 0 0 0 4px rgba(94,120,255,0.08) !important;
+            border-color: rgba(93,120,255,0.32) !important;
+            box-shadow: 0 0 0 4px rgba(93,120,255,0.08) !important;
         }
 
         .stButton > button, .stDownloadButton > button {
-            min-height: 48px;
+            min-height: 46px;
             border-radius: 999px !important;
-            border: 1px solid rgba(94,120,255,0.18) !important;
-            background: linear-gradient(135deg, rgba(20,31,59,0.98) 0%, rgba(40,59,118,0.98) 100%) !important;
+            border: 1px solid rgba(93,120,255,0.16) !important;
+            background: linear-gradient(135deg, #4968ee 0%, #7087ff 100%) !important;
             color: #ffffff !important;
             font-size: 13px;
             font-weight: 760;
-            letter-spacing: 0.07em;
-            box-shadow: 0 18px 38px rgba(26, 41, 82, 0.16);
+            letter-spacing: 0.04em;
+            box-shadow: 0 14px 30px rgba(73,104,238,0.16);
             transition: all .18s ease;
         }
-        .stButton > button:hover, .stDownloadButton > button:hover { transform: translateY(-1px); box-shadow: 0 24px 44px rgba(26,41,82,0.22); border-color: rgba(94,120,255,0.28) !important; }
+        .stButton > button:hover, .stDownloadButton > button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 20px 36px rgba(73,104,238,0.22);
+        }
 
-        div[data-testid="stAlert"] { background: rgba(255,255,255,0.72); border: 1px solid rgba(94,120,255,0.10); border-radius: 18px; }
-        div[data-testid="stExpander"] { background: rgba(255,255,255,0.70) !important; border: 1px solid rgba(94,120,255,0.10) !important; border-radius: 18px !important; }
-        div[data-testid="stTabs"] button { font-weight: 650; }
+        div[data-testid="stLinkButton"] a {
+            border-radius: 18px !important;
+            border: 1px solid rgba(93,120,255,0.12) !important;
+            background: rgba(255,255,255,0.92) !important;
+            color: var(--blue-deep) !important;
+            min-height: 48px !important;
+            box-shadow: 0 12px 24px rgba(22,32,51,0.05) !important;
+            font-weight: 700 !important;
+        }
+        div[data-testid="stLinkButton"] a:hover {
+            border-color: rgba(93,120,255,0.28) !important;
+            transform: translateY(-1px);
+        }
 
+        div[data-testid="stAlert"] {
+            background: rgba(255,255,255,0.78);
+            border: 1px solid rgba(93,120,255,0.10);
+            border-radius: 18px;
+        }
+        div[data-testid="stExpander"] {
+            background: rgba(255,255,255,0.74) !important;
+            border: 1px solid rgba(93,120,255,0.10) !important;
+            border-radius: 18px !important;
+        }
         .report-preview {
-            background: rgba(255,255,255,0.76);
-            border: 1px solid rgba(94,120,255,0.10);
+            background: rgba(255,255,255,0.86);
+            border: 1px solid rgba(93,120,255,0.10);
             border-radius: 24px;
-            padding: 24px;
+            padding: 22px;
             box-shadow: var(--shadow);
-            backdrop-filter: blur(14px);
         }
         .download-link {
             display: inline-block;
@@ -334,39 +244,25 @@ def inject_ui_css():
             padding: 12px 18px;
             margin-top: 12px;
             border-radius: 999px;
-            border: 1px solid rgba(94,120,255,0.18);
-            background: linear-gradient(135deg, rgba(20,31,59,0.98) 0%, rgba(40,59,118,0.98) 100%);
-            color: #ffffff !important;
+            background: linear-gradient(135deg, #4968ee 0%, #7087ff 100%);
+            color: white !important;
             font-size: 13px;
             font-weight: 760;
-            letter-spacing: 0.06em;
         }
-
-        .template-box {
-            background: rgba(255,255,255,0.68);
-            border: 1px solid rgba(94,120,255,0.10);
+        .hint-box {
+            background: rgba(255,255,255,0.78);
+            border: 1px solid rgba(93,120,255,0.10);
             border-radius: 18px;
-            padding: 15px 16px;
-            color: var(--ink-soft);
+            padding: 14px 16px;
+            color: var(--muted);
             line-height: 1.75;
             font-size: 13px;
         }
-        .micro-tip { margin-top: 8px; color: rgba(238,243,255,0.60); font-size: 12px; line-height: 1.7; }
+        .micro-tip { color: var(--muted); font-size: 12px; line-height: 1.7; }
 
-        @media (max-width: 1180px) {
-            .source-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-            .source-grid.compact { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 900px) {
-            .source-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .step-grid { grid-template-columns: 1fr; }
-            .hero-shell { padding: 32px 24px 30px; }
-            .console-head { display: block; }
-        }
-        @media (max-width: 680px) {
-            .source-grid { grid-template-columns: 1fr; }
-            .hero-title { font-size: 42px; }
-            .panel-title, .console-title { font-size: 24px; }
+        @media (max-width: 800px) {
+            .top-hero { padding: 22px; }
+            .hero-title { font-size: 38px; }
         }
         </style>
         """,
@@ -374,11 +270,11 @@ def inject_ui_css():
     )
 
 
-inject_ui_css()
+inject_css()
 
 
 # =========================
-# 3. Search engines and helpers
+# Search definitions
 # =========================
 INTENT_SUFFIX = {
     "全网口碑": "口碑 体验 测评",
@@ -391,19 +287,35 @@ INTENT_SUFFIX = {
 }
 
 SEARCH_ENGINES = [
-    {"group": "UGC 社媒", "name": "小红书｜体验与痛点", "url": "https://www.xiaohongshu.com/search_result?keyword={q}"},
-    {"group": "UGC 社媒", "name": "微博｜热议与争议", "url": "https://s.weibo.com/weibo?q={q}"},
-    {"group": "UGC 社媒", "name": "知乎｜问答与口碑", "url": "https://www.zhihu.com/search?type=content&q={q}"},
-    {"group": "UGC 社媒", "name": "微信文章｜长文观点", "url": "https://weixin.sogou.com/weixin?type=2&query={q}"},
-    {"group": "视频测评", "name": "抖音｜短视频反馈", "url": "https://www.douyin.com/search/{q}"},
-    {"group": "视频测评", "name": "B站｜深度测评", "url": "https://search.bilibili.com/all?keyword={q}"},
-    {"group": "视频测评", "name": "快手｜下沉反馈", "url": "https://www.kuaishou.com/search/video?searchKey={q}"},
-    {"group": "搜索引擎", "name": "百度｜中文全网", "url": "https://www.baidu.com/s?wd={q}"},
-    {"group": "搜索引擎", "name": "Google｜海外/英文", "url": "https://www.google.com/search?q={q}"},
-    {"group": "搜索引擎", "name": "必应｜补充检索", "url": "https://www.bing.com/search?q={q}"},
-    {"group": "电商口碑", "name": "京东｜购买评价", "url": "https://search.jd.com/Search?keyword={q}"},
-    {"group": "电商口碑", "name": "什么值得买｜消费决策", "url": "https://search.smzdm.com/?c=home&s={q}"},
+    {"group": "UGC 社媒", "name": "小红书", "url": "https://www.xiaohongshu.com/search_result?keyword={q}"},
+    {"group": "UGC 社媒", "name": "微博", "url": "https://s.weibo.com/weibo?q={q}"},
+    {"group": "UGC 社媒", "name": "知乎", "url": "https://www.zhihu.com/search?type=content&q={q}"},
+    {"group": "UGC 社媒", "name": "微信文章", "url": "https://weixin.sogou.com/weixin?type=2&query={q}"},
+    {"group": "视频测评", "name": "抖音", "url": "https://www.douyin.com/search/{q}"},
+    {"group": "视频测评", "name": "B站", "url": "https://search.bilibili.com/all?keyword={q}"},
+    {"group": "视频测评", "name": "快手", "url": "https://www.kuaishou.com/search/video?searchKey={q}"},
+    {"group": "搜索引擎", "name": "百度", "url": "https://www.baidu.com/s?wd={q}"},
+    {"group": "搜索引擎", "name": "Google", "url": "https://www.google.com/search?q={q}"},
+    {"group": "搜索引擎", "name": "必应", "url": "https://www.bing.com/search?q={q}"},
+    {"group": "电商口碑", "name": "京东", "url": "https://search.jd.com/Search?keyword={q}"},
+    {"group": "电商口碑", "name": "什么值得买", "url": "https://search.smzdm.com/?c=home&s={q}"},
 ]
+
+
+API_PRESETS = {
+    "阿里云 DashScope": {
+        "base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "models": ["deepseek-v3", "qwen-max", "qwen-plus", "qwen-turbo"],
+    },
+    "OpenRouter": {
+        "base": "https://openrouter.ai/api/v1",
+        "models": ["deepseek/deepseek-chat-v3-0324:free", "openai/gpt-4.1-mini", "google/gemini-2.5-flash-preview"],
+    },
+    "SiliconFlow": {
+        "base": "https://api.siliconflow.cn/v1",
+        "models": ["deepseek-ai/DeepSeek-V3", "Qwen/Qwen2.5-72B-Instruct", "THUDM/GLM-4-9B-Chat"],
+    },
+}
 
 
 def compose_query(product: str, intent: str, aliases: str = "", competitor: str = "") -> str:
@@ -430,32 +342,6 @@ def build_search_links(query: str, groups: list[str] | None = None):
     return links
 
 
-def get_search_links(keyword: str):
-    query = compose_query(keyword, "全网口碑")
-    return {item["name"]: item["url"] for item in build_search_links(query, ["UGC 社媒", "视频测评", "搜索引擎"])}
-
-
-def render_link_grid(links: list[dict] | dict, compact: bool = False):
-    if isinstance(links, dict):
-        iterable = [{"name": name, "url": url, "group": "Search"} for name, url in links.items()]
-    else:
-        iterable = links
-
-    cards = []
-    for idx, item in enumerate(iterable, start=1):
-        cards.append(
-            f"""
-            <a class="source-card" href="{escape(item['url'])}" target="_blank" rel="noopener noreferrer">
-                <div class="source-index">{escape(item.get('group', 'Search'))} · {idx:02d}</div>
-                <div class="source-name">{escape(item['name'])}</div>
-                <div class="source-note">OPEN SEARCH CHANNEL</div>
-            </a>
-            """
-        )
-    klass = "source-grid compact" if compact else "source-grid"
-    st.markdown(f"<div class='{klass}'>{''.join(cards)}</div>", unsafe_allow_html=True)
-
-
 def sanitize_filename(name: str) -> str:
     name = re.sub(r"[\\/:*?\"<>|\s]+", "_", name.strip())
     return name[:80] or "product_report"
@@ -474,7 +360,7 @@ def is_ready_to_analyze(api_key: str, *texts: str) -> bool:
 def get_corpus_template(product_name: str = "产品名") -> str:
     product_name = product_name.strip() or "产品名"
     return f"""【产品】{product_name}
-【采集日期】2026-04-24
+【采集日期】{datetime.date.today()}
 【平台】小红书 / 微博 / 抖音 / B站 / 京东 / 其他
 【搜索词】{product_name} 体验 吐槽 测评
 
@@ -495,26 +381,22 @@ def get_corpus_template(product_name: str = "产品名") -> str:
 
 
 # =========================
-# 4. Header / quick search / panels
+# Rendering helpers
 # =========================
-def render_hero():
+def render_header():
     st.markdown(
         """
-        <section class="hero-shell">
-            <div class="hero-content">
-                <div class="hero-topline">SIGNAL STUDIO · PRODUCT INTELLIGENCE</div>
-                <h1 class="hero-title">Strategy<br><span>Signal Deck</span></h1>
-                <div class="hero-desc">
-                    一个面向产品、市场与 PMM 的轻量研判工作台。输入产品名，快速生成跨平台取证入口；
-                    粘贴真实语料，输出单品洞察、竞品攻防与传播建议。视觉保持科技感，同时保留高端品牌官网的克制留白。
-                </div>
-                <div class="hero-meta">
-                    <span class="hero-chip">Portable Search Dock</span>
-                    <span class="hero-chip">Evidence-based</span>
-                    <span class="hero-chip">No Hallucination</span>
-                    <span class="hero-chip">Strategy-ready</span>
-                </div>
-                <div class="hero-note">左上角可展开 / 收起配置侧边栏；搜索控制台已放回主页面，日常取证更顺手。</div>
+        <section class="top-hero">
+            <div class="eyebrow">SIGNAL STUDIO · PRODUCT INTELLIGENCE</div>
+            <div class="hero-title">Strategy <span>Signal Deck</span></div>
+            <p class="hero-desc">
+            轻量产品情报台：先用便携搜索坞快速取证，再粘贴真实语料生成单品研判或竞品攻防。
+            页面已简化成“搜索—整理—分析”三步，不再堆叠复杂装饰。
+            </p>
+            <div class="mini-steps">
+                <span class="mini-chip">01 搜索取证</span>
+                <span class="mini-chip">02 粘贴语料</span>
+                <span class="mini-chip">03 生成简报</span>
             </div>
         </section>
         """,
@@ -522,22 +404,21 @@ def render_hero():
     )
 
 
-def render_quick_search_console():
-    st.markdown(
-        """
-        <section class="search-console">
-            <div class="console-head">
-                <div>
-                    <div class="console-kicker">Portable Evidence Search</div>
-                    <div class="console-title">便携取证搜索台</div>
-                    <div class="console-desc">先在这里输入产品和搜索意图，下面会生成社媒、视频、搜索引擎、电商口碑入口。这个区域常驻主页面，不依赖左侧栏。</div>
-                </div>
-            </div>
-        </section>
-        """,
-        unsafe_allow_html=True,
-    )
+def render_link_buttons(links: list[dict], columns_per_row: int = 4):
+    for start in range(0, len(links), columns_per_row):
+        row = links[start:start + columns_per_row]
+        cols = st.columns(columns_per_row)
+        for idx, col in enumerate(cols):
+            if idx < len(row):
+                item = row[idx]
+                col.link_button(
+                    f"{item['name']} · {item['group']}",
+                    item["url"],
+                    use_container_width=True,
+                )
 
+
+def render_search_dock():
     if "quick_product" not in st.session_state:
         st.session_state.quick_product = ""
     if "single_product_name" not in st.session_state:
@@ -547,95 +428,63 @@ def render_quick_search_console():
     if "competitor_product" not in st.session_state:
         st.session_state.competitor_product = ""
 
-    c1, c2, c3, c4 = st.columns([1.4, 1.0, 1.0, 1.0])
-    with c1:
-        quick_product = st.text_input("产品关键词", key="quick_product", placeholder="例如：vivo X Fold5 / OPPO Find N6 / iPhone 17")
-    with c2:
-        quick_intent = st.selectbox("搜索意图", list(INTENT_SUFFIX.keys()), index=0)
-    with c3:
-        quick_aliases = st.text_input("补充词 / 别名", placeholder="例如：折叠屏 蓝厂 体验")
-    with c4:
-        quick_competitor = st.text_input("竞品词，可空", placeholder="例如：Find N6 / Mate X")
+    with st.container(border=True):
+        st.markdown("### 便携搜索坞")
+        st.caption("输入产品名后，直接打开各平台搜索入口。这里全部改成原生按钮，不再用 HTML 卡片，避免页面把代码渲染出来。")
 
-    query = compose_query(quick_product, quick_intent, quick_aliases, quick_competitor)
+        c1, c2, c3, c4 = st.columns([1.35, 0.9, 1.0, 0.95])
+        with c1:
+            product = st.text_input("产品关键词", key="quick_product", placeholder="例如：vivo X Fold5 / OPPO Find N6")
+        with c2:
+            intent = st.selectbox("搜索意图", list(INTENT_SUFFIX.keys()), index=0)
+        with c3:
+            aliases = st.text_input("补充词 / 别名", placeholder="例如：折叠屏 蓝厂")
+        with c4:
+            competitor = st.text_input("竞品词，可空", placeholder="例如：Find N6")
 
-    if quick_product.strip():
-        st.markdown(
-            f"""
-            <div class="query-chip-row">
-                <span class="query-chip">当前搜索式：{escape(query)}</span>
-                <span class="query-chip">意图：{escape(quick_intent)}</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        query = compose_query(product, intent, aliases, competitor)
 
-        sync1, sync2, sync3 = st.columns(3)
-        with sync1:
-            if st.button("同步到单品分析", use_container_width=True):
-                st.session_state.single_product_name = quick_product.strip()
+        if product.strip():
+            st.markdown(f"<div class='query-preview'>当前搜索式：{escape(query)}</div>", unsafe_allow_html=True)
+
+            sync_cols = st.columns(3)
+            if sync_cols[0].button("同步到单品分析", use_container_width=True):
+                st.session_state.single_product_name = product.strip()
                 st.rerun()
-        with sync2:
-            if st.button("同步为本品", use_container_width=True):
-                st.session_state.main_product = quick_product.strip()
+            if sync_cols[1].button("同步为本品", use_container_width=True):
+                st.session_state.main_product = product.strip()
                 st.rerun()
-        with sync3:
-            if st.button("同步为竞品", use_container_width=True):
-                st.session_state.competitor_product = quick_product.strip()
+            if sync_cols[2].button("同步为竞品", use_container_width=True):
+                st.session_state.competitor_product = product.strip()
                 st.rerun()
 
-        tab_ugc, tab_video, tab_engine, tab_ecom, tab_all = st.tabs(["UGC 社媒", "视频测评", "搜索引擎", "电商口碑", "全部入口"])
-        with tab_ugc:
-            render_link_grid(build_search_links(query, ["UGC 社媒"]))
-        with tab_video:
-            render_link_grid(build_search_links(query, ["视频测评"]))
-        with tab_engine:
-            render_link_grid(build_search_links(query, ["搜索引擎"]))
-        with tab_ecom:
-            render_link_grid(build_search_links(query, ["电商口碑"]))
-        with tab_all:
-            render_link_grid(build_search_links(query))
+            group_tabs = st.tabs(["常用入口", "UGC 社媒", "视频测评", "搜索引擎", "电商口碑"])
+            with group_tabs[0]:
+                common = build_search_links(query, ["UGC 社媒", "视频测评", "搜索引擎"])[:8]
+                render_link_buttons(common, columns_per_row=4)
+            with group_tabs[1]:
+                render_link_buttons(build_search_links(query, ["UGC 社媒"]), columns_per_row=4)
+            with group_tabs[2]:
+                render_link_buttons(build_search_links(query, ["视频测评"]), columns_per_row=3)
+            with group_tabs[3]:
+                render_link_buttons(build_search_links(query, ["搜索引擎"]), columns_per_row=3)
+            with group_tabs[4]:
+                render_link_buttons(build_search_links(query, ["电商口碑"]), columns_per_row=2)
 
-        with st.expander("复制搜索式 / URL 清单"):
-            st.code(query, language="text")
-            url_lines = [f"{item['name']}：{item['url']}" for item in build_search_links(query)]
-            st.code("\n".join(url_lines), language="text")
-    else:
-        st.info("先输入产品关键词。比如：vivo X Fold5、OPPO Find N6、iPhone 17、小米汽车 SU7。")
-
-
-def render_steps():
-    st.markdown(
-        """
-        <div class="step-grid">
-            <div class="step-card"><div class="step-num">Step 01</div><div class="step-title">Search Evidence</div><div class="step-desc">用便携搜索台生成多平台入口，保留不同平台的原始用户表达。</div></div>
-            <div class="step-card"><div class="step-num">Step 02</div><div class="step-title">Paste Corpus</div><div class="step-desc">按平台分段粘贴评论、测评摘录、客服反馈或电商评价。</div></div>
-            <div class="step-card"><div class="step-num">Step 03</div><div class="step-title">Generate Brief</div><div class="step-desc">生成结构化策略简报，强调证据、问题分层、攻防建议和信息缺口。</div></div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def render_panel(kicker: str, title: str, desc: str):
-    st.markdown(
-        f"""
-        <div class="panel">
-            <div class="panel-kicker">{escape(kicker)}</div>
-            <div class="panel-title">{escape(title)}</div>
-            <div class="panel-desc">{escape(desc)}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+            with st.expander("复制搜索式 / URL 清单"):
+                st.code(query, language="text")
+                url_lines = [f"{item['name']}：{item['url']}" for item in build_search_links(query)]
+                st.code("\n".join(url_lines), language="text")
+        else:
+            st.info("先输入产品关键词，系统会生成小红书、微博、抖音、B站、搜索引擎、电商评价入口。")
 
 
 def render_evidence_helper(product_name: str):
     with st.expander("语料整理模板 / 证据质量提示", expanded=False):
         st.markdown(
             """
-            <div class="template-box">
-            建议至少收集 3 类语料：① 社媒真实吐槽；② 媒体/博主测评摘录；③ 电商评价或购买问答。
+            <div class="hint-box">
+            建议至少收集 3 类语料：社媒真实吐槽、媒体/博主测评摘录、电商评价或购买问答。
             分析前不要把评论过度润色，保留原话更容易生成有效洞察。
             </div>
             """,
@@ -645,7 +494,7 @@ def render_evidence_helper(product_name: str):
 
 
 # =========================
-# 5. LLM engine
+# LLM engine and prompt templates
 # =========================
 def analyze_with_llm(prompt: str, api_key: str, model_name: str, api_base: str):
     url = api_base.rstrip("/") + "/chat/completions"
@@ -677,9 +526,6 @@ def analyze_with_llm(prompt: str, api_key: str, model_name: str, api_base: str):
         return f"ERROR: 引擎响应异常，请检查 API Key、模型名称或接口地址。错误信息：{e}"
 
 
-# =========================
-# 6. Prompt templates
-# =========================
 def build_single_prompt(product_name: str, product_type: str, focus: list[str], corpus: str) -> str:
     focus_text = "、".join(focus) if focus else "用户体验、核心卖点、负面反馈、购买阻力、传播机会"
     return f"""
@@ -780,30 +626,27 @@ def build_compare_prompt(main_product: str, competitor_product: str, product_typ
 """.strip()
 
 
-# =========================
-# 7. Report export
-# =========================
 def generate_html_report(text_content: str, title: str):
     html_template = """
     <html><head><meta charset="utf-8"><style>
     body {
         font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-        background: linear-gradient(180deg, #f6f8fc 0%, #eef3f9 100%);
+        background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
         padding: 40px;
-        color: #101827;
+        color: #162033;
     }
     .report-card {
         max-width: 980px;
         margin: 0 auto;
-        background: rgba(255,255,255,0.94);
+        background: rgba(255,255,255,0.96);
         padding: 54px;
         border-radius: 24px;
-        border: 1px solid rgba(94,120,255,0.12);
+        border: 1px solid rgba(93,120,255,0.12);
         box-shadow: 0 30px 80px rgba(17, 28, 55, 0.12);
     }
     .eyebrow {
         text-align: center;
-        color: #5e78ff;
+        color: #5d78ff;
         font-size: 11px;
         letter-spacing: 0.28em;
         text-transform: uppercase;
@@ -812,9 +655,9 @@ def generate_html_report(text_content: str, title: str):
     }
     h1 {
         text-align: center;
-        font-weight: 680;
+        font-weight: 700;
         font-size: 34px;
-        color: #101827;
+        color: #162033;
         margin: 0 0 10px 0;
         letter-spacing: -0.03em;
     }
@@ -823,20 +666,20 @@ def generate_html_report(text_content: str, title: str):
         color: #697385;
         font-size: 12px;
         margin-bottom: 34px;
-        border-bottom: 1px solid rgba(94,120,255,0.12);
+        border-bottom: 1px solid rgba(93,120,255,0.12);
         padding-bottom: 22px;
     }
     h2 {
-        font-weight: 680;
+        font-weight: 700;
         font-size: 22px;
-        color: #1e2f67;
+        color: #23366f;
         margin: 34px 0 16px 0;
         padding-top: 18px;
-        border-top: 1px solid rgba(94,120,255,0.12);
+        border-top: 1px solid rgba(93,120,255,0.12);
     }
     .quote-box {
         background: #f5efe9;
-        border-left: 3px solid #b78458;
+        border-left: 3px solid #b88758;
         padding: 15px 18px;
         margin: 14px 0;
         color: #3a465c;
@@ -846,13 +689,13 @@ def generate_html_report(text_content: str, title: str):
     }
     p { line-height: 1.82; margin: 9px 0; }
     table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 13px; }
-    th, td { padding: 13px; border: 1px solid rgba(94,120,255,0.12); text-align: left; vertical-align: top; }
-    th { background: #eff4ff; font-weight: 700; color: #101827; }
+    th, td { padding: 13px; border: 1px solid rgba(93,120,255,0.12); text-align: left; vertical-align: top; }
+    th { background: #eff4ff; font-weight: 700; color: #162033; }
     .footer {
         text-align: center;
         margin-top: 46px;
         padding-top: 20px;
-        border-top: 1px solid rgba(94,120,255,0.12);
+        border-top: 1px solid rgba(93,120,255,0.12);
         font-size: 11px;
         color: #697385;
         letter-spacing: 0.08em;
@@ -913,34 +756,23 @@ def generate_html_report(text_content: str, title: str):
 
     b64 = base64.b64encode(res.encode("utf-8")).decode()
     filename = sanitize_filename(title)
-    return f'<a class="download-link" href="data:text/html;base64,{b64}" download="{filename}.html">EXPORT REPORT · HTML/PDF</a>'
+    return f'<a class="download-link" href="data:text/html;base64,{b64}" download="{filename}.html">导出报告 · HTML/PDF</a>'
 
 
 # =========================
-# 8. Sidebar controls
+# Sidebar controls
 # =========================
 with st.sidebar:
-    st.markdown(
-        """
-        <div style="padding: 18px 0 14px; border-bottom: 1px solid rgba(94,120,255,0.16); margin-bottom: 18px;">
-            <div style="font-size: 28px; color: #ffffff; font-weight: 760; letter-spacing: -0.03em;">Signal Studio</div>
-            <div style="font-size: 11px; color: rgba(238,243,255,0.58); letter-spacing: 0.22em; margin-top: 6px;">PRODUCT INTELLIGENCE</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.markdown("## Signal Studio")
+    st.caption("PRODUCT INTELLIGENCE")
 
-    st.caption("SYSTEM ACCESS")
-    api_key = st.text_input("API Key", type="password", placeholder="sk-... / dashscope key")
-    api_base = st.text_input(
-        "接口地址",
-        value="https://dashscope.aliyuncs.com/compatible-mode/v1",
-        help="需兼容 OpenAI Chat Completions 格式。阿里云 DashScope 可保持默认。",
-    )
-    model_name = st.text_input("模型代号", value="deepseek-v3")
+    api_key = st.text_input("API Key", type="password", placeholder="请输入你的 API Key")
+    provider_name = st.selectbox("服务商预设", list(API_PRESETS.keys()), index=0)
+    provider_info = API_PRESETS[provider_name]
+    api_base = st.selectbox("接口地址", [provider_info["base"]], index=0)
+    model_name = st.selectbox("模型代号", provider_info["models"], index=0)
 
     st.divider()
-    st.caption("ANALYSIS SETUP")
     mode = st.radio("任务模式", ["单品深度研判", "竞品对比攻防"])
     product_type = st.selectbox("产品类型", ["手机/消费电子", "汽车/智能座舱", "家电/IOT", "软件/App", "旅游/酒店产品", "其他"])
     focus = st.multiselect(
@@ -948,90 +780,80 @@ with st.sidebar:
         ["用户痛点", "卖点感知", "价格价值感", "品牌认知", "系统/软件体验", "影像/性能", "外观设计", "渠道/服务", "传播话术"],
         default=["用户痛点", "卖点感知", "价格价值感", "传播话术"],
     )
-    st.markdown("<div class='micro-tip'>侧边栏默认收起；主页面已保留便携搜索台，方便随时检索。</div>", unsafe_allow_html=True)
+    st.markdown("<div class='micro-tip'>配置栏默认收起。接口地址和模型代号均为预设选择，用户不用手动输入。</div>", unsafe_allow_html=True)
 
 
 # =========================
-# 9. Main UI
+# Main UI
 # =========================
-render_hero()
-render_quick_search_console()
-render_steps()
+render_header()
+render_search_dock()
 
 if mode == "单品深度研判":
-    render_panel(
-        "SINGLE PRODUCT STUDY",
-        "单品深度研判",
-        "适合分析某一款产品当前的真实用户反馈、核心卖点感知、主要痛点、机会卖点与下一步传播建议。",
-    )
+    with st.container(border=True):
+        st.markdown("### 单品深度研判")
+        st.caption("分析某一款产品的真实用户反馈、核心卖点感知、主要痛点与下一步传播建议。")
 
-    st.markdown("<div class='section-caption'>Product Input</div>", unsafe_allow_html=True)
-    product_name = st.text_input("产品名称", key="single_product_name", placeholder="例如：vivo X Fold5、OPPO Find N6、iPhone 17、小米汽车 SU7")
+        product_name = st.text_input("产品名称", key="single_product_name", placeholder="例如：vivo X Fold5、OPPO Find N6、iPhone 17")
+        if product_name.strip():
+            default_query = compose_query(product_name, "全网口碑")
+            with st.expander("快捷取证入口", expanded=False):
+                render_link_buttons(build_search_links(default_query, ["UGC 社媒", "视频测评", "搜索引擎"])[:8], columns_per_row=4)
+        else:
+            st.info("先输入产品名称，或在上方搜索坞输入后点击“同步到单品分析”。")
 
-    if product_name.strip():
-        st.markdown("<div class='section-caption'>Quick Evidence Bundle</div>", unsafe_allow_html=True)
-        st.caption("这里保留一组快捷入口；更完整的搜索意图切换请用上方便携搜索台。")
-        default_query = compose_query(product_name, "全网口碑")
-        render_link_grid(build_search_links(default_query, ["UGC 社媒", "视频测评", "搜索引擎"]), compact=False)
-    else:
-        st.info("先输入产品名称，或在上方搜索台输入后点击“同步到单品分析”。")
+        render_evidence_helper(product_name)
 
-    render_evidence_helper(product_name)
+        user_input = st.text_area(
+            "真实语料",
+            height=300,
+            placeholder="建议按平台分段粘贴，例如：\n【小红书】……\n【微博】……\n【B站】……\n【京东】……",
+        )
 
-    st.markdown("<div class='section-caption'>Raw Corpus</div>", unsafe_allow_html=True)
-    user_input = st.text_area(
-        "请粘贴真实评论、测评摘录、社媒反馈或客服反馈",
-        height=310,
-        placeholder="建议按平台分段粘贴，例如：\n【小红书】……\n【微博】……\n【B站】……\n【京东】……",
-    )
-
-    if st.button("GENERATE SINGLE PRODUCT BRIEF", type="primary", use_container_width=True):
-        if is_ready_to_analyze(api_key, product_name, user_input):
-            with st.spinner("正在基于真实语料生成研判报告..."):
-                prompt = build_single_prompt(product_name.strip(), product_type, focus, user_input.strip())
-                report = analyze_with_llm(prompt, api_key, model_name, api_base)
-                title = f"{product_name.strip()}_单品深度研判报告"
-                st.markdown("### 报告预览")
-                st.markdown("<div class='report-preview'>", unsafe_allow_html=True)
-                st.markdown(report)
-                st.markdown(generate_html_report(report, title), unsafe_allow_html=True)
-                st.markdown("</div>", unsafe_allow_html=True)
+        if st.button("生成单品研判报告", type="primary", use_container_width=True):
+            if is_ready_to_analyze(api_key, product_name, user_input):
+                with st.spinner("正在基于真实语料生成研判报告..."):
+                    prompt = build_single_prompt(product_name.strip(), product_type, focus, user_input.strip())
+                    report = analyze_with_llm(prompt, api_key, model_name, api_base)
+                    title = f"{product_name.strip()}_单品深度研判报告"
+                    st.markdown("### 报告预览")
+                    st.markdown("<div class='report-preview'>", unsafe_allow_html=True)
+                    st.markdown(report)
+                    st.markdown(generate_html_report(report, title), unsafe_allow_html=True)
+                    st.markdown("</div>", unsafe_allow_html=True)
 
 else:
-    render_panel(
-        "COMPETITIVE DUEL",
-        "竞品对比攻防",
-        "适合把本品与竞品的 UGC 反馈放在同一张策略桌上，判断防守点、进攻点与可用传播话术。",
-    )
+    with st.container(border=True):
+        st.markdown("### 竞品对比攻防")
+        st.caption("把本品与竞品的 UGC 反馈放在同一张策略桌上，判断防守点、进攻点与可用传播话术。")
 
-    col1, col2 = st.columns(2, gap="large")
+        col1, col2 = st.columns(2, gap="large")
+        with col1:
+            main_product = st.text_input("本品名称", key="main_product", placeholder="例如：vivo X Fold5")
+            if main_product.strip():
+                with st.expander("本品快捷入口", expanded=False):
+                    q = compose_query(main_product, "全网口碑")
+                    render_link_buttons(build_search_links(q, ["UGC 社媒", "视频测评"])[:6], columns_per_row=3)
+            main_input = st.text_area("本品真实语料", height=300, placeholder="粘贴本品评论/测评/用户反馈...")
 
-    with col1:
-        st.markdown("<div class='section-caption'>Main Product</div>", unsafe_allow_html=True)
-        main_product = st.text_input("本品名称", key="main_product", placeholder="例如：vivo X Fold5")
-        if main_product.strip():
-            q = compose_query(main_product, "全网口碑")
-            render_link_grid(build_search_links(q, ["UGC 社媒", "视频测评"]), compact=True)
-        main_input = st.text_area("贴入本品真实语料", height=310, placeholder="粘贴本品评论/测评/用户反馈...")
+        with col2:
+            competitor_product = st.text_input("竞品名称", key="competitor_product", placeholder="例如：OPPO Find N6 / 华为 Mate X 系列")
+            if competitor_product.strip():
+                with st.expander("竞品快捷入口", expanded=False):
+                    q = compose_query(competitor_product, "全网口碑")
+                    render_link_buttons(build_search_links(q, ["UGC 社媒", "视频测评"])[:6], columns_per_row=3)
+            competitor_input = st.text_area("竞品真实语料", height=300, placeholder="粘贴竞品评论/测评/用户反馈...")
 
-    with col2:
-        st.markdown("<div class='section-caption'>Competitor</div>", unsafe_allow_html=True)
-        competitor_product = st.text_input("竞品名称", key="competitor_product", placeholder="例如：OPPO Find N6 / 华为 Mate X 系列")
-        if competitor_product.strip():
-            q = compose_query(competitor_product, "全网口碑")
-            render_link_grid(build_search_links(q, ["UGC 社媒", "视频测评"]), compact=True)
-        competitor_input = st.text_area("贴入竞品真实语料", height=310, placeholder="粘贴竞品评论/测评/用户反馈...")
+        render_evidence_helper(main_product or competitor_product)
 
-    render_evidence_helper(main_product or competitor_product)
-
-    if st.button("GENERATE COMPETITIVE BRIEF", type="primary", use_container_width=True):
-        if is_ready_to_analyze(api_key, main_product, competitor_product, main_input, competitor_input):
-            with st.spinner("正在构建竞品攻防研判报告..."):
-                prompt = build_compare_prompt(main_product.strip(), competitor_product.strip(), product_type, focus, main_input.strip(), competitor_input.strip())
-                report = analyze_with_llm(prompt, api_key, model_name, api_base)
-                title = f"{main_product.strip()}_vs_{competitor_product.strip()}_竞品攻防研判报告"
-                st.markdown("### 报告预览")
-                st.markdown("<div class='report-preview'>", unsafe_allow_html=True)
-                st.markdown(report)
-                st.markdown(generate_html_report(report, title), unsafe_allow_html=True)
-                st.markdown("</div>", unsafe_allow_html=True)
+        if st.button("生成竞品攻防报告", type="primary", use_container_width=True):
+            if is_ready_to_analyze(api_key, main_product, competitor_product, main_input, competitor_input):
+                with st.spinner("正在构建竞品攻防研判报告..."):
+                    prompt = build_compare_prompt(main_product.strip(), competitor_product.strip(), product_type, focus, main_input.strip(), competitor_input.strip())
+                    report = analyze_with_llm(prompt, api_key, model_name, api_base)
+                    title = f"{main_product.strip()}_vs_{competitor_product.strip()}_竞品攻防研判报告"
+                    st.markdown("### 报告预览")
+                    st.markdown("<div class='report-preview'>", unsafe_allow_html=True)
+                    st.markdown(report)
+                    st.markdown(generate_html_report(report, title), unsafe_allow_html=True)
+                    st.markdown("</div>", unsafe_allow_html=True)
